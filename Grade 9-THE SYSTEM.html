@@ -1,0 +1,1965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>THE SYSTEM-GRADE 9</title>
+<link rel="manifest" href="manifest.json">
+<script>
+  if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#FFFFFF;--sf:#F9F9FB;--sf2:#F2F2F7;--bd:#E5E5EA;
+  --acc:#007AFF;--acl:#E3F0FF;--acd:#0055CC;
+  --tx:#1C1C1E;--t2:#6E6E73;--t3:#AEAEB2;
+  --gr:#30D158;--grb:#E8F9EE;
+  --or:#FF9F0A;--orb:#FFF4E3;
+  --re:#FF3B30;--reb:#FFE9E8;
+  --go:#FF9500;--gob:#FFF4E3;
+  --pu:#8B5CF6;--pub:#F0EBFF;
+  --cy:#32ADE6;--cyb:#E3F6FF;
+  --r:14px;--rs:10px;
+  --sh:0 1px 12px rgba(0,0,0,.07),0 1px 3px rgba(0,0,0,.04);
+  --sh2:0 6px 36px rgba(0,0,0,.11),0 2px 8px rgba(0,0,0,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+.mono{font-family:'JetBrains Mono',monospace;}
+button{cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+
+/* ── TICKER ── */
+.ticker{position:fixed;top:0;left:0;right:0;z-index:1000;background:var(--acc);height:32px;display:flex;align-items:center;overflow:hidden;}
+.tlbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:rgba(255,255,255,.9);background:rgba(0,0,0,.18);padding:0 12px;height:100%;display:flex;align-items:center;white-space:nowrap;letter-spacing:.08em;flex-shrink:0;}
+.ttrack{display:flex;align-items:center;white-space:nowrap;animation:tick 80s linear infinite;}
+.ttrack span{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.95);padding:0 40px;}
+@keyframes tick{0%{transform:translateX(100vw)}100%{transform:translateX(-600%)}}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;z-index:500;background:linear-gradient(135deg,#f0f4ff 0%,#fff 60%);display:flex;align-items:center;justify-content:center;padding:32px 16px;padding-top:48px;}
+.lcard{background:#fff;border:1px solid var(--bd);border-radius:22px;padding:36px 40px;width:100%;max-width:400px;box-shadow:var(--sh2);display:flex;flex-direction:column;gap:14px;}
+.lwm{font-size:24px;font-weight:800;letter-spacing:-.04em;text-align:center;line-height:1.1;}.lwm span{color:var(--acc);}
+.lsub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);letter-spacing:.14em;text-align:center;text-transform:uppercase;}
+.ldiv{height:1px;background:var(--bd);}
+.ltabs{display:flex;gap:5px;background:var(--sf2);border-radius:var(--rs);padding:4px;}
+.ltab{flex:1;padding:9px;border:none;background:transparent;border-radius:8px;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--t2);transition:all .2s;}
+.ltab.active{background:#fff;color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.1);}
+.lf{display:flex;flex-direction:column;gap:5px;}
+.lf label{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.05em;text-transform:uppercase;}
+.lf input,.lf select{padding:11px 13px;border:1.5px solid var(--bd);border-radius:var(--rs);font-family:'JetBrains Mono',monospace;font-size:13px;background:#fff;color:var(--tx);outline:none;transition:border-color .2s;width:100%;}
+.lf input:focus,.lf select:focus{border-color:var(--acc);}
+.lbtn{padding:13px;background:var(--acc);color:#fff;border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;transition:all .2s;width:100%;}
+.lbtn:hover,.lbtn:active{background:var(--acd);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,122,255,.3);}
+.lerr{font-size:11px;color:var(--re);text-align:center;font-family:'JetBrains Mono',monospace;display:none;}
+
+/* ── APP ── */
+#app{display:none;padding-top:32px;min-height:100vh;}
+
+/* TOPBAR */
+.topbar{position:sticky;top:32px;z-index:100;background:rgba(255,255,255,.93);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 16px;height:56px;gap:12px;}
+.tbrand{font-size:15px;font-weight:800;letter-spacing:-.04em;flex-shrink:0;white-space:nowrap;}.tbrand span{color:var(--acc);}
+.tnav{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.tnav::-webkit-scrollbar{display:none;}
+.nbtn{padding:6px 11px;border:none;background:transparent;border-radius:7px;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--t2);white-space:nowrap;transition:all .2s;}
+.nbtn:hover{background:var(--sf);color:var(--tx);}
+.nbtn.active{background:var(--acl);color:var(--acc);}
+.tright{display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.upill{display:flex;align-items:center;gap:6px;background:var(--sf);border:1px solid var(--bd);border-radius:100px;padding:4px 10px 4px 5px;font-size:11px;font-weight:600;white-space:nowrap;}
+.uav{width:22px;height:22px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+.logbtn{padding:6px 10px;background:var(--sf);border:1px solid var(--bd);border-radius:7px;font-family:'Syne',sans-serif;font-size:11px;font-weight:600;color:var(--t2);transition:all .2s;}
+.logbtn:hover{border-color:var(--re);color:var(--re);}
+
+/* SAVE INDICATOR */
+.save-ind{position:fixed;top:38px;right:12px;z-index:999;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:4px 10px;border-radius:5px;background:var(--grb);color:#1a7a3a;border:1px solid var(--gr);display:none;pointer-events:none;}
+
+/* MAIN */
+.main{padding:16px;max-width:1520px;margin:0 auto;}
+.page{display:none;animation:fu .25s ease both;}
+.page.active{display:block;}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;}
+
+/* CARD */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:18px;box-shadow:var(--sh);}
+.ct{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.09em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.ct .dot{width:5px;height:5px;border-radius:50%;background:var(--acc);flex-shrink:0;}
+.ct-right{margin-left:auto;display:flex;gap:6px;align-items:center;}
+
+/* STAT CARD */
+.sc{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px 18px;box-shadow:var(--sh);}
+.sl{font-size:9px;font-weight:700;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;}
+.sv{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;letter-spacing:-.03em;line-height:1;}
+.ss{font-size:9px;color:var(--t3);margin-top:3px;font-family:'JetBrains Mono',monospace;}
+.sc.surge{border-color:var(--gr);background:var(--grb);}
+.sc.stag{border-color:var(--or);background:var(--orb);}
+.sc.risk{border-color:var(--re);background:var(--reb);}
+.sc.gold{border-color:var(--go);background:var(--gob);}
+.sc.blue{border-color:var(--cy);background:var(--cyb);}
+.sc.purple{border-color:var(--pu);background:var(--pub);}
+
+/* BADGES */
+.sbadge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:9px;font-weight:700;letter-spacing:.04em;white-space:nowrap;}
+.sbadge.surge{background:var(--grb);color:#1a7a3a;}
+.sbadge.stag{background:var(--orb);color:#a0600a;}
+.sbadge.risk{background:var(--reb);color:#b00;}
+.rb{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 5px;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;}
+.rb.S{background:#FFF4E3;color:#FF9500;border:1.5px solid #FF9500;}
+.rb.A{background:#F0EBFF;color:#8B5CF6;border:1.5px solid #8B5CF6;}
+.rb.B{background:var(--acl);color:var(--acc);border:1.5px solid var(--acc);}
+.rb.C{background:var(--grb);color:#1a7a3a;border:1.5px solid var(--gr);}
+.rb.D{background:var(--sf2);color:#636366;border:1.5px solid #636366;}
+.rb.E{background:var(--sf2);color:var(--t3);border:1.5px solid var(--t3);}
+
+/* PROGRESS */
+.pb{height:6px;background:var(--sf2);border-radius:100px;overflow:hidden;}
+.pf{height:100%;background:linear-gradient(90deg,var(--acc),#34AADC);border-radius:100px;transition:width .6s ease;}
+
+/* TABLE */
+.tw{overflow-x:auto;border-radius:var(--rs);border:1px solid var(--bd);}
+.st{width:100%;border-collapse:collapse;font-size:11px;}
+.st th{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;padding:8px 11px;text-align:left;border-bottom:1px solid var(--bd);background:var(--sf2);white-space:nowrap;}
+.st td{padding:8px 11px;border-bottom:1px solid var(--bd);vertical-align:middle;}
+.st tr:last-child td{border-bottom:none;}
+.st tr:hover td{background:var(--sf);}
+.ssec{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.06em;}
+.ssec.a{background:var(--acl);color:var(--acc);}
+.ssec.b{background:var(--cyb);color:#007AC1;}
+
+/* FORMS */
+.ff{display:flex;flex-direction:column;gap:9px;}
+.ff input,.ff select,.ff textarea{padding:10px 12px;border:1.5px solid var(--bd);border-radius:var(--rs);font-family:'JetBrains Mono',monospace;font-size:12px;background:#fff;color:var(--tx);outline:none;transition:border-color .2s;}
+.ff input:focus,.ff select:focus,.ff textarea:focus{border-color:var(--acc);}
+.btn{padding:10px 16px;border:none;border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:12px;font-weight:700;transition:all .2s;white-space:nowrap;}
+.btn-acc{background:var(--acc);color:#fff;}.btn-acc:hover{background:var(--acd);transform:translateY(-1px);}
+.btn-gr{background:var(--gr);color:#fff;}.btn-gr:hover{filter:brightness(.9);}
+.btn-re{background:var(--re);color:#fff;}.btn-re:hover{filter:brightness(.9);}
+.btn-go{background:var(--go);color:#fff;}.btn-go:hover{filter:brightness(.9);}
+.btn-ghost{background:var(--sf);border:1.5px solid var(--bd);color:var(--t2);}.btn-ghost:hover{border-color:var(--acc);color:var(--acc);}
+
+/* PAGE HEADER */
+.ph{margin-bottom:18px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.ph-left h1{font-size:22px;font-weight:800;letter-spacing:-.04em;}
+.ph-left p{font-size:11px;color:var(--t2);margin-top:2px;}
+.ph-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+
+/* SEARCH BAR */
+.sbar{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;}
+.sbar input{flex:1;min-width:140px;padding:8px 12px;border:1.5px solid var(--bd);border-radius:var(--rs);font-family:'JetBrains Mono',monospace;font-size:11px;background:#fff;color:var(--tx);outline:none;transition:border-color .2s;}
+.sbar input:focus{border-color:var(--acc);}
+.fbtn{padding:7px 12px;border:1.5px solid var(--bd);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:11px;font-weight:600;background:var(--sf);color:var(--t2);transition:all .2s;}
+.fbtn.active,.fbtn:hover{border-color:var(--acc);color:var(--acc);background:var(--acl);}
+
+/* HUNTER HERO */
+.hhero{background:linear-gradient(135deg,var(--acc) 0%,#34AADC 100%);border-radius:var(--r);padding:24px 28px;color:#fff;display:flex;align-items:center;gap:20px;margin-bottom:16px;position:relative;overflow:hidden;}
+.hhero::before{content:'THE SYSTEM';position:absolute;right:-8px;top:-10px;font-family:'JetBrains Mono',monospace;font-size:60px;font-weight:700;color:rgba(255,255,255,.05);line-height:1;pointer-events:none;}
+.hav{width:64px;height:64px;border-radius:15px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;flex-shrink:0;border:2px solid rgba(255,255,255,.3);}
+.hinfo{flex:1;min-width:0;}
+.hname{font-size:20px;font-weight:800;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hsec{font-family:'JetBrains Mono',monospace;font-size:9px;opacity:.7;margin-top:2px;letter-spacing:.08em;}
+.hxpd{font-family:'JetBrains Mono',monospace;font-size:11px;opacity:.9;margin-top:8px;}
+.hpbar{height:7px;background:rgba(255,255,255,.2);border-radius:100px;overflow:hidden;margin-top:6px;}
+.hpfill{height:100%;background:#fff;border-radius:100px;transition:width .8s ease;}
+.hright{text-align:right;flex-shrink:0;}
+.hlvl{font-family:'JetBrains Mono',monospace;font-size:44px;font-weight:700;line-height:1;letter-spacing:-.04em;}
+.hlvll{font-size:9px;opacity:.7;letter-spacing:.06em;font-family:'JetBrains Mono',monospace;}
+
+/* SECTION BAR */
+.secbar{display:flex;border-radius:var(--rs);overflow:hidden;height:32px;border:1px solid var(--bd);margin:8px 0;}
+.secbar .sa{background:var(--acc);}
+.secbar .sb{background:#34AADC;}
+.secbar .sa,.secbar .sb{display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#fff;transition:width .4s;}
+
+/* CHART */
+.chrt{position:relative;height:220px;}
+.chrt-lg{position:relative;height:260px;}
+.chrt-sm{position:relative;height:180px;}
+
+/* MASTERY GRID */
+.mastery-grid{display:grid;gap:2px;}
+.mg-cell{border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:#fff;cursor:pointer;transition:transform .15s;position:relative;}
+.mg-cell:hover{transform:scale(1.15);z-index:2;}
+.mg-tooltip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1C1C1E;color:#fff;padding:5px 9px;border-radius:6px;font-size:9px;white-space:nowrap;pointer-events:none;z-index:100;display:none;}
+.mg-cell:hover .mg-tooltip{display:block;}
+
+/* DOUBT CARD */
+.dcard{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:14px;transition:all .2s;}
+.dcard:hover{border-color:var(--acc);box-shadow:var(--sh);}
+.dcard.answered{border-color:var(--gr);background:var(--grb);}
+.dcard.pending{border-color:var(--or);}
+.dcq{font-size:12px;font-weight:600;margin-bottom:6px;line-height:1.4;}
+.dcmeta{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);display:flex;gap:10px;flex-wrap:wrap;}
+.dca{font-size:11px;color:var(--t2);margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);line-height:1.5;}
+.doubt-status{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;}
+.doubt-status.pending{background:var(--orb);color:#a0600a;}
+.doubt-status.answered{background:var(--grb);color:#1a7a3a;}
+
+/* HW CARD */
+.hwcard{background:#fff;border:1px solid var(--bd);border-radius:9px;padding:11px 13px;display:flex;align-items:center;gap:9px;transition:all .15s;}
+.hwcard:hover{border-color:var(--acc);}
+.hwchk{width:18px;height:18px;border-radius:5px;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;font-size:10px;}
+.hwchk.done{background:var(--gr);border-color:var(--gr);color:#fff;}
+.hwinfo{flex:1;min-width:0;}
+.hwtit{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hwmet{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);margin-top:1px;}
+.hwdue{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;flex-shrink:0;}
+.hwdue.late{background:var(--reb);color:var(--re);}
+.hwdue.soon{background:var(--orb);color:var(--or);}
+.hwdue.ok{background:var(--grb);color:#1a7a3a;}
+
+/* ACH CARD */
+.achcard{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px;text-align:center;}
+.achcard.unlocked{border-color:var(--go);background:var(--gob);}
+.achcard.locked{opacity:.4;filter:grayscale(.9);}
+.achicon{font-size:24px;margin-bottom:4px;}
+.achname{font-size:10px;font-weight:700;}
+.achdesc{font-size:8px;color:var(--t2);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.achxp{font-size:8px;font-weight:700;color:var(--go);margin-top:2px;}
+
+/* MODAL */
+.movl{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;padding:0;}
+.movl.open{display:flex;}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;box-shadow:var(--sh2);animation:mslide .25s ease;}
+@keyframes mslide{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
+.modal h2{font-size:16px;font-weight:800;margin-bottom:14px;letter-spacing:-.02em;}
+.mcl{float:right;cursor:pointer;color:var(--t3);font-size:17px;background:none;border:none;line-height:1;padding:2px;}
+
+/* MARKS INPUT */
+.mi{width:64px;padding:5px 7px;border:1.5px solid var(--bd);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:12px;background:#fff;color:var(--tx);outline:none;transition:border-color .15s;text-align:center;}
+.mi:focus{border-color:var(--acc);}
+.mi.changed{border-color:var(--or);background:var(--orb);}
+.mi.saved{border-color:var(--gr);background:var(--grb);}
+
+/* STORAGE BAR */
+.stor-row{display:flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t2);}
+.stor-track{flex:1;height:4px;background:var(--sf2);border-radius:100px;overflow:hidden;}
+.stor-fill{height:100%;background:var(--gr);border-radius:100px;transition:width .3s;}
+
+/* TOAST */
+.toast{position:fixed;bottom:16px;right:16px;z-index:9000;background:var(--tx);color:#fff;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);animation:tin .3s ease;max-width:300px;}
+.toast.hide{animation:tout .25s ease forwards;}
+@keyframes tin{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes tout{from{opacity:1}to{opacity:0;transform:translateY(8px)}}
+.ti{font-size:20px;flex-shrink:0;}.tt{font-size:12px;font-weight:700;}.ts{font-size:10px;opacity:.7;font-family:'JetBrains Mono',monospace;}
+
+/* XP POP */
+.xpp{position:fixed;pointer-events:none;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:var(--gr);z-index:9999;animation:xpa .85s ease forwards;}
+@keyframes xpa{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.3)}}
+
+/* CHAPTER TEST ACCORDION */
+.ch-acc{border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:10px;}
+.ch-acc-hd{padding:12px 16px;background:var(--sf);display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+.ch-acc-hd:hover{background:var(--sf2);}
+.ch-acc-title{font-size:13px;font-weight:700;flex:1;}
+.ch-acc-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t2);}
+.ch-acc-body{display:none;padding:14px;border-top:1px solid var(--bd);background:#fff;}
+.ch-acc.open .ch-acc-body{display:block;}
+.ch-acc-arrow{transition:transform .2s;font-size:12px;color:var(--t3);}
+.ch-acc.open .ch-acc-arrow{transform:rotate(180deg);}
+
+/* TEST PILL */
+.test-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;border:1px solid var(--bd);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;background:var(--sf);cursor:pointer;transition:all .15s;margin:2px;}
+.test-pill.active{background:var(--acc);color:#fff;border-color:var(--acc);}
+.test-pill:hover:not(.active){border-color:var(--acc);color:var(--acc);}
+
+/* NOTIFICATION BELL */
+.bell-wrap{position:relative;}
+.bell-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;background:var(--re);border-radius:50%;font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;border:2px solid #fff;}
+
+/* ADMIN SUPREME PANEL */
+.supreme-card{background:linear-gradient(135deg,#1C1C1E 0%,#2d2d30 100%);border-radius:var(--r);padding:18px;color:#fff;border:none;}
+.supreme-card .ct{color:rgba(255,255,255,.5);}
+.supreme-card .ct .dot{background:#FF9500;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .g2,.g3,.g4,.g5,.g6{grid-template-columns:1fr!important;}
+  .g2.keep2{grid-template-columns:1fr 1fr!important;}
+  .main{padding:12px;}
+  .lcard{padding:28px 20px;}
+  .hhero{flex-direction:column;text-align:center;padding:20px;}
+  .hright{text-align:center;}
+  .ph{flex-direction:column;}
+  .ph-right{width:100%;}
+  .topbar{padding:0 10px;}
+  .tbrand{font-size:13px;}
+}
+@media(max-width:480px){
+  .hlvl{font-size:36px;}
+  .hname{font-size:17px;}
+  .card{padding:14px;}
+}
+select.styled{padding:7px 10px;border:1.5px solid var(--bd);border-radius:var(--rs);font-family:'Syne',sans-serif;font-size:11px;font-weight:600;background:#fff;color:var(--tx);outline:none;}
+.empty{text-align:center;padding:28px;color:var(--t3);font-family:'JetBrains Mono',monospace;font-size:11px;}
+.pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:100px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="save-ind" id="saveInd">✓ SAVED</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="tlbl">⚡ LIVE</div>
+  <div class="ttrack" id="tickerTrack"></div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="lcard">
+    <div class="lwm">THE <span>SYSTEM</span></div>
+    <div class="lsub">Math Mastery · Multi-Device · v5</div>
+    <div class="ldiv"></div>
+    <div class="ltabs">
+      <button class="ltab active" onclick="switchTab('overlord')">⚔️ Overlord</button>
+      <button class="ltab" onclick="switchTab('hunter')">🎯 Hunter</button>
+    </div>
+    <div id="ol-login" style="display:flex;flex-direction:column;gap:11px;">
+      <div class="lf"><label>Master Key</label><input type="password" id="ap" placeholder="masterkey2026" autocomplete="off"></div>
+      <button class="lbtn" onclick="loginAdmin()">⚔️ Enter Overlord Realm</button>
+    </div>
+    <div id="ht-login" style="display:none;flex-direction:column;gap:11px;">
+      <div class="lf"><label>Select Hunter</label><select id="ssel"></select></div>
+      <div class="lf"><label>Access Key</label><input type="password" id="sp" placeholder="math2026" autocomplete="off"></div>
+      <button class="lbtn" onclick="loginStudent()">🎯 Enter The System</button>
+    </div>
+    <div class="lerr" id="lerr">⚠ Invalid credentials. Access denied.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="tbrand">THE <span>SYSTEM</span></div>
+    <div class="tnav" id="tnav"></div>
+    <div class="tright">
+      <div class="bell-wrap" id="bellWrap" style="display:none;">
+        <button class="logbtn" onclick="showPage('doubts');renderDoubtsAdmin()" style="font-size:14px;padding:5px 8px;">🔔</button>
+        <div class="bell-badge" id="bellBadge" style="display:none;">0</div>
+      </div>
+      <div class="upill"><div class="uav" id="tav">?</div><span id="tun">User</span></div>
+      <button class="logbtn" onclick="logout()">Exit</button>
+    </div>
+  </div>
+  <div class="main">
+
+    <!-- ██████████ ADMIN PAGES ██████████ -->
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page">
+      <div class="ph">
+        <div class="ph-left"><h1>⚔️ Overlord Command Center</h1><p>Supreme intelligence — all data persists across all devices</p></div>
+        <div class="ph-right">
+          <div class="stor-row" style="min-width:160px;">
+            <span>💾</span><div class="stor-track"><div class="stor-fill" id="stor-fill" style="width:0%"></div></div><span id="stor-lbl">0KB</span>
+          </div>
+        </div>
+      </div>
+      <!-- Top Stats -->
+      <div class="g6" style="margin-bottom:14px;">
+        <div class="sc surge"><div class="sl">🟢 Surging</div><div class="sv" id="s-surge">0</div><div class="ss">≥70%</div></div>
+        <div class="sc stag"><div class="sl">🟡 Stagnant</div><div class="sv" id="s-stag">0</div><div class="ss">40–69%</div></div>
+        <div class="sc risk"><div class="sl">🔴 At Risk</div><div class="sv" id="s-risk">0</div><div class="ss">&lt;40%</div></div>
+        <div class="sc blue"><div class="sl">❓ Doubts</div><div class="sv" id="s-doubts">0</div><div class="ss">pending</div></div>
+        <div class="sc gold"><div class="sl">📚 HW Done</div><div class="sv" id="s-hw">0</div><div class="ss">completions</div></div>
+        <div class="sc purple"><div class="sl">👥 Hunters</div><div class="sv" id="s-total">79</div><div class="ss">enrolled</div></div>
+      </div>
+      <div class="g3" style="margin-bottom:14px;">
+        <!-- Section Analytics -->
+        <div class="card">
+          <div class="ct"><div class="dot"></div>Section Analytics</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <div><div style="font-size:9px;color:var(--t3);font-family:'JetBrains Mono',monospace;">SEC A · T-25M</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--acc)" id="avg-a">0%</div></div>
+            <div style="text-align:right;"><div style="font-size:9px;color:var(--t3);font-family:'JetBrains Mono',monospace;">SEC B · T-20M</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:#34AADC" id="avg-b">0%</div></div>
+          </div>
+          <div class="secbar"><div class="sa" id="sba" style="width:50%">A</div><div class="sb" id="sbb" style="width:50%">B</div></div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--t3);font-family:'JetBrains Mono',monospace;"><span>39 students</span><span>40 students</span></div>
+        </div>
+        <!-- XP Inject -->
+        <div class="card">
+          <div class="ct"><div class="dot"></div>⚡ XP Command</div>
+          <div class="ff">
+            <input type="text" id="inj-q" placeholder="Search student..." oninput="filterInj()">
+            <select id="inj-sel"></select>
+            <input type="number" id="inj-amt" placeholder="XP amount..." min="1" max="9999">
+            <button class="btn btn-acc" onclick="doInject()">⚡ Inject XP</button>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gr);text-align:center;min-height:14px;" id="inj-fb"></div>
+          </div>
+        </div>
+        <!-- Admin Actions -->
+        <div class="card">
+          <div class="ct"><div class="dot"></div>Supreme Actions</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <button class="btn btn-ghost" style="flex-direction:column;display:flex;gap:3px;text-align:left;" onclick="showPage('marks');renderMarksPage()"><span style="font-size:16px;">✏️</span><span>Enter Marks</span></button>
+            <button class="btn btn-ghost" style="flex-direction:column;display:flex;gap:3px;text-align:left;" onclick="showPage('chapters');renderChapters()"><span style="font-size:16px;">📖</span><span>Chapter Tests</span></button>
+            <button class="btn btn-ghost" style="flex-direction:column;display:flex;gap:3px;text-align:left;" onclick="showPage('mastery');renderMastery()"><span style="font-size:16px;">🗺️</span><span>Mastery Grid</span></button>
+            <button class="btn btn-ghost" style="flex-direction:column;display:flex;gap:3px;text-align:left;" onclick="showPage('doubts');renderDoubtsAdmin()"><span style="font-size:16px;">❓</span><span>Doubts <span id="dash-doubt-cnt" style="color:var(--re);"></span></span></button>
+            <button class="btn btn-ghost" style="flex-direction:column;display:flex;gap:3px;text-align:left;" onclick="openHWModal()"><span style="font-size:16px;">📚</span><span>Add Homework</span></button>
+            <button class="btn btn-ghost" style="flex-direction:column;display:flex;gap:3px;text-align:left;" onclick="openAnnoModal()"><span style="font-size:16px;">📢</span><span>Broadcast</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card"><div class="ct"><div class="dot"></div>XP Heatmap</div><div class="chrt-lg"><canvas id="heatmap"></canvas></div></div>
+        <div class="card"><div class="ct"><div class="dot"></div>Score Distribution</div><div class="chrt-lg"><canvas id="distChart"></canvas></div></div>
+      </div>
+      <!-- Hall of Fame -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="ct"><div class="dot"></div>🏆 Hall of Fame — Top 5</div>
+        <div id="hof"></div>
+      </div>
+      <!-- Recent Doubts Preview -->
+      <div class="card">
+        <div class="ct"><div class="dot"></div>❓ Recent Doubts <div class="ct-right"><button class="btn btn-ghost" style="padding:4px 10px;font-size:10px;" onclick="showPage('doubts');renderDoubtsAdmin()">View All →</button></div></div>
+        <div id="dash-doubts-preview"></div>
+      </div>
+    </div>
+
+    <!-- MARKS INPUT -->
+    <div id="page-marks" class="page">
+      <div class="ph">
+        <div class="ph-left"><h1>✏️ Marks Entry</h1><p>Input marks → auto % + rank + XP update. Saves instantly.</p></div>
+        <div class="ph-right">
+          <select class="styled" id="marks-test-sel" onchange="onTestSelChange()"></select>
+          <button class="btn btn-ghost" onclick="openNewTestModal()">+ New Test</button>
+          <button class="btn btn-gr" onclick="saveAllMarks()">💾 Save All</button>
+        </div>
+      </div>
+      <div class="g2 keep2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="ct"><div class="dot"></div>Section A — Max Marks</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="number" id="max-a" value="25" min="1" max="200" style="width:80px;padding:9px;border:1.5px solid var(--bd);border-radius:var(--rs);font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;text-align:center;outline:none;background:#fff;" oninput="recalcLive()">
+            <span style="font-size:11px;color:var(--t2);">Max marks for Section A test</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct"><div class="dot"></div>Section B — Max Marks</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="number" id="max-b" value="20" min="1" max="200" style="width:80px;padding:9px;border:1.5px solid var(--bd);border-radius:var(--rs);font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;text-align:center;outline:none;background:#fff;" oninput="recalcLive()">
+            <span style="font-size:11px;color:var(--t2);">Max marks for Section B test</span>
+          </div>
+        </div>
+      </div>
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="ct"><div class="dot"></div>Section A Students</div>
+          <div class="sbar"><input type="text" id="ms-a" placeholder="Search Sec A..." oninput="renderMarksTable('A')"></div>
+          <div class="tw"><table class="st"><thead><tr><th>#</th><th>Name</th><th>Marks</th><th>%</th><th>Status</th></tr></thead><tbody id="mtbody-a"></tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="ct"><div class="dot"></div>Section B Students</div>
+          <div class="sbar"><input type="text" id="ms-b" placeholder="Search Sec B..." oninput="renderMarksTable('B')"></div>
+          <div class="tw"><table class="st"><thead><tr><th>#</th><th>Name</th><th>Marks</th><th>%</th><th>Status</th></tr></thead><tbody id="mtbody-b"></tbody></table></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ct"><div class="dot"></div>📊 Live Ranking Preview — Standard Competition Ranking</div>
+        <div class="tw"><table class="st"><thead><tr><th>Rank</th><th>Name</th><th>Sec</th><th>Marks / Max</th><th>%</th><th>XP</th><th>Hunter Rank</th><th>Status</th></tr></thead><tbody id="lrankbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- CHAPTER TESTS -->
+    <div id="page-chapters" class="page">
+      <div class="ph">
+        <div class="ph-left"><h1>📖 Chapter Tests</h1><p>Multiple tests per chapter — marks auto-update student graphs</p></div>
+        <div class="ph-right">
+          <button class="btn btn-acc" onclick="openAddTestModal()">+ Add Test</button>
+        </div>
+      </div>
+      <div id="chapters-list"></div>
+    </div>
+
+    <!-- MASTERY GRID -->
+    <div id="page-mastery" class="page">
+      <div class="ph">
+        <div class="ph-left"><h1>🗺️ Chapter Mastery Grid</h1><p>Every student × every chapter — click a cell for details</p></div>
+        <div class="ph-right">
+          <select class="styled" id="mastery-sec-sel" onchange="renderMastery()">
+            <option value="all">All Students</option>
+            <option value="A">Section A</option>
+            <option value="B">Section B</option>
+          </select>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="ct"><div class="dot"></div>Legend</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:10px;">
+          <span style="display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;background:#30D158;border-radius:3px;display:inline-block;"></span>Mastered (≥80%)</span>
+          <span style="display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;background:#FF9F0A;border-radius:3px;display:inline-block;"></span>Developing (50–79%)</span>
+          <span style="display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;background:#FF3B30;border-radius:3px;display:inline-block;"></span>Needs Work (&lt;50%)</span>
+          <span style="display:flex;align-items:center;gap:5px;"><span style="width:14px;height:14px;background:#E5E5EA;border-radius:3px;display:inline-block;"></span>Not Tested</span>
+        </div>
+      </div>
+      <div class="card" id="mastery-wrap" style="overflow-x:auto;"></div>
+    </div>
+
+    <!-- ROSTER -->
+    <div id="page-roster" class="page">
+      <div class="ph">
+        <div class="ph-left"><h1>📋 Hunter Roster</h1><p>Complete live database</p></div>
+        <div class="ph-right">
+          <select class="styled" onchange="rSecF=this.value;renderRoster()"><option value="all">All</option><option value="A">Sec A</option><option value="B">Sec B</option></select>
+        </div>
+      </div>
+      <div class="sbar">
+        <input type="text" id="rsearch" placeholder="Search name..." oninput="renderRoster()">
+        <button class="fbtn active" id="f-all" onclick="setSec('all')">All</button>
+        <button class="fbtn" id="f-A" onclick="setSec('A')">Sec A</button>
+        <button class="fbtn" id="f-B" onclick="setSec('B')">Sec B</button>
+        <select class="styled" id="sort-sel" onchange="renderRoster()">
+          <option value="xp">Sort: XP</option>
+          <option value="name">Sort: Name</option>
+          <option value="pct">Sort: %</option>
+          <option value="level">Sort: Level</option>
+        </select>
+      </div>
+      <div class="tw"><table class="st">
+        <thead><tr><th>#</th><th>Name</th><th>Sec</th><th>Marks</th><th>%</th><th>XP</th><th>Level</th><th>Rank</th><th>Status</th><th>HW</th><th>Streak</th><th>Doubts</th><th>Poly#</th></tr></thead>
+        <tbody id="rtbody"></tbody>
+      </table></div>
+    </div>
+
+    <!-- DOUBTS ADMIN -->
+    <div id="page-doubts" class="page">
+      <div class="ph">
+        <div class="ph-left"><h1>❓ Doubt Management</h1><p>Answer student questions — responses appear instantly on their portal</p></div>
+        <div class="ph-right">
+          <select class="styled" id="doubt-filter" onchange="renderDoubtsAdmin()">
+            <option value="all">All Doubts</option>
+            <option value="pending">Pending Only</option>
+            <option value="answered">Answered</option>
+          </select>
+        </div>
+      </div>
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="sc risk"><div class="sl">⏳ Pending</div><div class="sv" id="d-pending">0</div></div>
+        <div class="sc surge"><div class="sl">✅ Answered</div><div class="sv" id="d-answered">0</div></div>
+      </div>
+      <div id="doubts-admin-list" style="display:grid;gap:10px;"></div>
+    </div>
+
+    <!-- HOMEWORK ADMIN -->
+    <div id="page-homework" class="page">
+      <div class="ph">
+        <div class="ph-left"><h1>📚 Homework Tracker</h1></div>
+        <div class="ph-right"><button class="btn btn-acc" onclick="openHWModal()">+ Add Assignment</button></div>
+      </div>
+      <div class="g3" style="margin-bottom:14px;" id="hw-stat-cards"></div>
+      <div class="card">
+        <div class="ct"><div class="dot"></div>Completion by Student</div>
+        <div class="sbar">
+          <input type="text" id="hwsearch" placeholder="Search..." oninput="renderHWTable()">
+          <button class="fbtn active" onclick="hwSecF='all';renderHWTable()">All</button>
+          <button class="fbtn" onclick="hwSecF='A';renderHWTable()">Sec A</button>
+          <button class="fbtn" onclick="hwSecF='B';renderHWTable()">Sec B</button>
+        </div>
+        <div class="tw"><table class="st"><thead><tr><th>#</th><th>Name</th><th>Sec</th><th>Done</th><th>Total</th><th>Rate</th><th>Streak</th><th>Bonus XP</th></tr></thead><tbody id="hwtbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- STUDENT PROFILE (Admin view of individual student) -->
+    <div id="page-student-profile" class="page">
+      <div class="ph">
+        <div class="ph-left"><h1 id="sp-title">Student Profile</h1><p id="sp-subtitle"></p></div>
+        <div class="ph-right"><button class="btn btn-ghost" onclick="history.back();showPage('roster');renderRoster()">← Back</button></div>
+      </div>
+      <div id="sp-content"></div>
+    </div>
+
+    <!-- ██████████ HUNTER PAGES ██████████ -->
+
+    <!-- HUNTER HOME -->
+    <div id="page-hunter" class="page">
+      <div class="hhero">
+        <div class="hav" id="hav">?</div>
+        <div class="hinfo">
+          <div class="hname" id="hname">Hunter</div>
+          <div class="hsec" id="hsec">SECTION —</div>
+          <div class="hxpd" id="hxpd">0 XP · Level 0</div>
+          <div class="hpbar"><div class="hpfill" id="hpfill" style="width:0%"></div></div>
+          <div style="font-size:9px;opacity:.7;margin-top:3px;font-family:'JetBrains Mono',monospace;" id="hxpn">— to next level</div>
+        </div>
+        <div class="hright">
+          <div class="hlvl" id="hlvl">0</div>
+          <div class="hlvll">LEVEL</div>
+          <div style="margin-top:6px;" id="hrkwrap"></div>
+          <div style="margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:10px;opacity:.8;" id="hstreak"></div>
+        </div>
+      </div>
+      <div class="g3" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="ct"><div class="dot"></div>My Stats</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
+            <div><div class="sl">Marks</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;" id="hm">0</div></div>
+            <div><div class="sl">Score</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;" id="hpct">0%</div></div>
+            <div><div class="sl">Global #</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;" id="hgr">#—</div></div>
+            <div><div class="sl">Section #</div><div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;" id="hcr">#—</div></div>
+          </div>
+          <div style="margin-top:11px;">
+            <div style="font-size:10px;color:var(--t2);font-weight:600;margin-bottom:4px;">Progress → Lv.<span id="hnlvl">1</span></div>
+            <div class="pb" style="height:8px;"><div class="pf" id="hpf" style="width:0%"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);"><span id="hxl">0 XP</span><span id="hxt">100 XP</span></div>
+          </div>
+          <div style="margin-top:9px;" id="h-status-row"></div>
+        </div>
+        <div class="card" style="grid-column:span 2;">
+          <div class="ct"><div class="dot"></div>Mastery Radar — All Chapters</div>
+          <div style="height:230px;"><canvas id="radar"></canvas></div>
+        </div>
+      </div>
+      <!-- Chapter Test Results -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="ct"><div class="dot"></div>📊 My Chapter Performance</div>
+        <div id="hunter-chapter-perf"></div>
+      </div>
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="ct"><div class="dot"></div>🏅 Achievements</div>
+          <div id="hunter-ach" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+        </div>
+        <div class="card">
+          <div class="ct"><div class="dot"></div>📚 Homework</div>
+          <div id="hunter-hw" style="display:flex;flex-direction:column;gap:6px;max-height:240px;overflow-y:auto;"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px;"><div class="ct"><div class="dot"></div>🏆 Leaderboard — Top 10</div><div id="hunter-lb"></div></div>
+    </div>
+
+    <!-- HUNTER DOUBTS -->
+    <div id="page-hunter-doubts" class="page">
+      <div class="ph">
+        <div class="ph-left"><h1>❓ My Doubts</h1><p>Ask questions — teacher will answer directly here</p></div>
+        <div class="ph-right"><button class="btn btn-acc" onclick="openAskDoubt()">+ Ask a Doubt</button></div>
+      </div>
+      <div id="hunter-doubts-list" style="display:grid;gap:10px;"></div>
+    </div>
+
+    <!-- HUNTER CHAPTER TESTS -->
+    <div id="page-hunter-chapters" class="page">
+      <div class="ph"><div class="ph-left"><h1>📖 My Chapter Tests</h1><p>All test results by chapter</p></div></div>
+      <div id="hunter-chapters-content"></div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ██████████ MODALS ██████████ -->
+<div class="movl" id="hw-modal" onclick="closeMov(event,'hw-modal')">
+  <div class="modal">
+    <button class="mcl" onclick="closeModal('hw-modal')">✕</button>
+    <h2>📚 Add Homework</h2>
+    <div class="ff">
+      <input type="text" id="hw-title" placeholder="Assignment title...">
+      <select id="hw-sec"><option value="both">Both Sections</option><option value="A">Section A</option><option value="B">Section B</option></select>
+      <select id="hw-chapter-sel"></select>
+      <input type="number" id="hw-xp" placeholder="Bonus XP" value="25" min="5" max="200">
+      <input type="date" id="hw-due">
+      <textarea id="hw-desc" placeholder="Instructions..." rows="2" style="resize:vertical;"></textarea>
+      <button class="btn btn-acc" onclick="addHomework()">✅ Assign</button>
+    </div>
+  </div>
+</div>
+
+<div class="movl" id="anno-modal" onclick="closeMov(event,'anno-modal')">
+  <div class="modal">
+    <button class="mcl" onclick="closeModal('anno-modal')">✕</button>
+    <h2>📢 Broadcast Announcement</h2>
+    <div class="ff">
+      <input type="text" id="anno-text" placeholder="Announcement text...">
+      <button class="btn btn-acc" onclick="addAnnouncement()">📢 Broadcast</button>
+    </div>
+  </div>
+</div>
+
+<div class="movl" id="newtest-modal" onclick="closeMov(event,'newtest-modal')">
+  <div class="modal">
+    <button class="mcl" onclick="closeModal('newtest-modal')">✕</button>
+    <h2>✏️ Create New Test</h2>
+    <div class="ff">
+      <input type="text" id="nt-name" placeholder="Test name (e.g. Polynomials Test 2)">
+      <select id="nt-chapter"></select>
+      <input type="number" id="nt-max-a" placeholder="Max marks — Section A" min="1" max="200">
+      <input type="number" id="nt-max-b" placeholder="Max marks — Section B" min="1" max="200">
+      <button class="btn btn-acc" onclick="createNewTest()">✅ Create</button>
+    </div>
+  </div>
+</div>
+
+<div class="movl" id="addtest-modal" onclick="closeMov(event,'addtest-modal')">
+  <div class="modal">
+    <button class="mcl" onclick="closeModal('addtest-modal')">✕</button>
+    <h2>📖 Add Chapter Test</h2>
+    <div class="ff">
+      <select id="at-chapter"></select>
+      <input type="text" id="at-name" placeholder="Test name (e.g. Test 1, Unit Test, FA1)">
+      <input type="number" id="at-max-a" placeholder="Max marks — Section A" min="1" max="200">
+      <input type="number" id="at-max-b" placeholder="Max marks — Section B" min="1" max="200">
+      <button class="btn btn-acc" onclick="createChapterTest()">✅ Create Test</button>
+    </div>
+  </div>
+</div>
+
+<div class="movl" id="doubt-answer-modal" onclick="closeMov(event,'doubt-answer-modal')">
+  <div class="modal">
+    <button class="mcl" onclick="closeModal('doubt-answer-modal')">✕</button>
+    <h2>💬 Answer Doubt</h2>
+    <div id="doubt-q-preview" style="background:var(--sf2);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;"></div>
+    <div class="ff">
+      <textarea id="doubt-answer-text" placeholder="Type your answer here..." rows="4" style="resize:vertical;"></textarea>
+      <button class="btn btn-acc" onclick="submitAnswer()">✅ Send Answer</button>
+    </div>
+    <input type="hidden" id="doubt-answer-id">
+  </div>
+</div>
+
+<div class="movl" id="ask-doubt-modal" onclick="closeMov(event,'ask-doubt-modal')">
+  <div class="modal">
+    <button class="mcl" onclick="closeModal('ask-doubt-modal')">✕</button>
+    <h2>❓ Ask a Doubt</h2>
+    <div class="ff">
+      <select id="ask-chapter"></select>
+      <input type="text" id="ask-topic" placeholder="Topic (e.g. Zeroes of polynomial)">
+      <textarea id="ask-question" placeholder="Describe your doubt clearly..." rows="4" style="resize:vertical;"></textarea>
+      <button class="btn btn-acc" onclick="submitDoubt()">📤 Submit Doubt</button>
+    </div>
+  </div>
+</div>
+
+<div class="movl" id="enter-chap-marks-modal" onclick="closeMov(event,'enter-chap-marks-modal')">
+  <div class="modal" style="max-width:700px;">
+    <button class="mcl" onclick="closeModal('enter-chap-marks-modal')">✕</button>
+    <h2 id="ecm-title">Enter Marks</h2>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--t2);">Max A:</label>
+        <input type="number" id="ecm-max-a" value="25" min="1" max="200" style="width:60px;padding:6px;border:1.5px solid var(--bd);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;text-align:center;outline:none;" oninput="refreshECM()">
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--t2);">Max B:</label>
+        <input type="number" id="ecm-max-b" value="20" min="1" max="200" style="width:60px;padding:6px;border:1.5px solid var(--bd);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:13px;text-align:center;outline:none;" oninput="refreshECM()">
+      </div>
+      <button class="btn btn-gr" onclick="saveECMAll()" style="margin-left:auto;">💾 Save All</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;" id="ecm-sec-tabs">
+      <button class="fbtn active" id="ecm-tab-all" onclick="ecmSec='all';refreshECM()">All</button>
+      <button class="fbtn" id="ecm-tab-a" onclick="ecmSec='A';refreshECM()">Sec A</button>
+      <button class="fbtn" id="ecm-tab-b" onclick="ecmSec='B';refreshECM()">Sec B</button>
+    </div>
+    <div class="tw" style="max-height:400px;overflow-y:auto;">
+      <table class="st"><thead><tr><th>#</th><th>Name</th><th>Sec</th><th>Marks</th><th>% (live)</th><th>Status</th></tr></thead>
+      <tbody id="ecm-tbody"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════╗
+// ║                CONSTANTS & CONFIG                        ║
+// ╚══════════════════════════════════════════════════════════╝
+const ADMIN_PASS = 'masterkey2026', STU_PASS = 'math2026';
+const STORE_KEY = 'thesystem_v5';
+
+const CHAPTERS = [
+  'Real Numbers','Polynomials','Linear Equations','Quadratic Equations',
+  'Arithmetic Progressions','Triangles','Coordinate Geometry',
+  'Trigonometry','Circles','Statistics & Probability'
+];
+
+const ACHIEVEMENTS = [
+  {id:'first_blood', icon:'⚔️', name:'First Blood',    desc:'Score any marks',    xp:10,  check:s=>s.marks>0},
+  {id:'half_way',    icon:'🎯', name:'Sharpshooter',   desc:'Score ≥50%',         xp:20,  check:s=>s.percent>=50},
+  {id:'surge',       icon:'🟢', name:'Surge Protocol', desc:'Score ≥70%',         xp:30,  check:s=>s.percent>=70},
+  {id:'elite',       icon:'💎', name:'Elite Hunter',   desc:'Score ≥90%',         xp:50,  check:s=>s.percent>=90},
+  {id:'perfect',     icon:'👑', name:'Overlord Score', desc:'Score 100%',         xp:100, check:s=>s.percent===100},
+  {id:'hw1',         icon:'📚', name:'Bookworm',       desc:'Complete 1 homework',xp:15,  check:s=>s.hwDone>=1},
+  {id:'hw5',         icon:'🔥', name:'Grind Mode',     desc:'Complete 5 HW',      xp:40,  check:s=>s.hwDone>=5},
+  {id:'streak3',     icon:'⚡', name:'Streak Master',  desc:'3-day streak',       xp:30,  check:s=>s.streak>=3},
+  {id:'doubt_asked', icon:'❓', name:'Curious Mind',   desc:'Ask a doubt',        xp:10,  check:s=>s.doubtsAsked>=1},
+  {id:'all_hw',      icon:'🌟', name:'Perfect Record', desc:'All homework done',  xp:60,  check:(s,hws)=>{const myHW=hws.filter(h=>h.section==='both'||h.section===s.section);return myHW.length>0&&s.hwDone>=myHW.length;}},
+];
+
+// ── SECTION A (39 students, T-25M) ──
+const RAW_A=[
+  {name:'AASRITHA P',marks:16,percent:64,polyRank:29},{name:'AATHMIKA T',marks:14,percent:56,polyRank:31},
+  {name:'ANISH KUMAR SWAI',marks:19,percent:76,polyRank:18},{name:'ARCHIT KUMAR DEY',marks:17,percent:68,polyRank:24},
+  {name:'BHARGAV T V',marks:20,percent:80,polyRank:13},{name:'DIVEETH HIMASAI',marks:17,percent:68,polyRank:24},
+  {name:'GANDLA NAGA SUHAS',marks:21,percent:84,polyRank:9},{name:'HIMANSHU A',marks:0,percent:0,polyRank:37},
+  {name:'KATHIRVEL I S',marks:18,percent:72,polyRank:20},{name:'PRISHAA S',marks:19,percent:76,polyRank:18},
+  {name:'RATISH P S',marks:21,percent:84,polyRank:9},{name:'RITTVIK S',marks:22,percent:88,polyRank:7},
+  {name:'SANJNA SHREE G R',marks:20,percent:80,polyRank:13},{name:'SRISHTI S',marks:24,percent:96,polyRank:3},
+  {name:'SWAATHI K R',marks:20,percent:80,polyRank:13},{name:'SYED JUNAID ALI',marks:23,percent:92,polyRank:4},
+  {name:'THANUSH KUMAR S S',marks:21,percent:84,polyRank:9},{name:'JAYANI PRUSTY',marks:12,percent:48,polyRank:34},
+  {name:'PRIYADARSHANI SAHU',marks:17,percent:68,polyRank:24},{name:'NISHAN S',marks:11,percent:44,polyRank:35},
+  {name:'SOUNAVO ROY',marks:8,percent:32,polyRank:36},{name:'YASASWINI REDDY E',marks:0,percent:0,polyRank:37},
+  {name:'AKSHATH R',marks:0,percent:0,polyRank:37},{name:'ANISA T',marks:20,percent:80,polyRank:13},
+  {name:'ASHWATH N J',marks:25,percent:100,polyRank:1},{name:'CHAVEZ T',marks:18,percent:72,polyRank:20},
+  {name:'DINESH P',marks:23,percent:92,polyRank:4},{name:'DIYAN D',marks:20,percent:80,polyRank:13},
+  {name:'HARSHITHA B',marks:13,percent:52,polyRank:33},{name:'KABILAN M',marks:17,percent:68,polyRank:24},
+  {name:'LAKSHITHA P',marks:18,percent:72,polyRank:20},{name:'MANISH K',marks:23,percent:92,polyRank:4},
+  {name:'MIRUTHULA S',marks:14,percent:56,polyRank:31},{name:'RESHNA B',marks:16,percent:64,polyRank:29},
+  {name:'RISHI KESHEV G D',marks:25,percent:100,polyRank:1},{name:'SHRADDHA K',marks:21,percent:84,polyRank:9},
+  {name:'SOUNDARYA K V',marks:18,percent:72,polyRank:20},{name:'MOHITHA S',marks:17,percent:68,polyRank:24},
+  {name:'EERSHIKA A',marks:22,percent:88,polyRank:7},
+];
+
+// ── SECTION B (40 students, T-20M) ──
+const RAW_B=[
+  {name:'DEEPSHIKA S',marks:19,percent:95,polyRank:3},{name:'ADVAITH A',marks:13,percent:65,polyRank:15},
+  {name:'ASHRIYA SHARON A R',marks:5,percent:25,polyRank:33},{name:'ASHWEEN G',marks:13,percent:65,polyRank:15},
+  {name:'B JITHESH',marks:15,percent:75,polyRank:9},{name:'DEEPAKUMAR M',marks:15,percent:75,polyRank:9},
+  {name:'DHARANISH BALAJI G',marks:14,percent:70,polyRank:13},{name:'MUHILINI R',marks:11,percent:55,polyRank:26},
+  {name:'GOPIKA D',marks:14,percent:70,polyRank:13},{name:'JAYAWANT V',marks:12,percent:60,polyRank:20},
+  {name:'JEMIMAH PRISCILLA D',marks:8,percent:40,polyRank:29},{name:'JEYKEESHAV S',marks:16,percent:80,polyRank:7},
+  {name:'KAMESH M',marks:4,percent:20,polyRank:35},{name:'LOGESH S P',marks:15,percent:75,polyRank:9},
+  {name:'LOHITA SANTHI R',marks:16,percent:80,polyRank:7},{name:'NIKHILESH S',marks:18,percent:90,polyRank:4},
+  {name:'NITHYA SHREE G',marks:6,percent:30,polyRank:32},{name:'NITHYASRI S',marks:12,percent:60,polyRank:20},
+  {name:'PRAJESH P R',marks:13,percent:65,polyRank:15},{name:'PRANAV V D M',marks:0,percent:0,polyRank:37},
+  {name:'PREMSAI T',marks:5,percent:25,polyRank:33},{name:'SAAI NARASIMMAN L G',marks:12,percent:60,polyRank:20},
+  {name:'SANJAY M',marks:0,percent:0,polyRank:37},{name:'SHANIBRAAZ S',marks:13,percent:65,polyRank:15},
+  {name:'SHANTHANU S',marks:4,percent:20,polyRank:35},{name:'SIDDHARTH V G',marks:7,percent:35,polyRank:31},
+  {name:'TANUSIYA T A',marks:12,percent:60,polyRank:20},{name:'THARIKA T',marks:11,percent:55,polyRank:26},
+  {name:'VISHWA PRAKASH',marks:8,percent:40,polyRank:29},{name:'HARSHINI V',marks:12,percent:60,polyRank:20},
+  {name:'SANGAMITHRA S P',marks:15,percent:75,polyRank:9},{name:'TRIVENA S',marks:10,percent:50,polyRank:28},
+  {name:'HARSHITHA M',marks:20,percent:100,polyRank:1},{name:'SHINY BENILA B',marks:20,percent:100,polyRank:1},
+  {name:'LEJA SREE R',marks:12,percent:60,polyRank:20},{name:'ERVIN DANNY',marks:18,percent:90,polyRank:4},
+  {name:'AKSHAY RAM B',marks:0,percent:0,polyRank:37},{name:'A SURUTHIKA',marks:13,percent:65,polyRank:15},
+  {name:'THIYASHRI T',marks:18,percent:90,polyRank:4},{name:'GOKULESHWARAN K P',marks:12,percent:60,polyRank:20},
+];
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                  DATA DEFAULTS                           ║
+// ╚══════════════════════════════════════════════════════════╝
+function calcXP(m,p){return m*5+Math.round(p*0.3);}
+function calcPct(m,mx){return mx>0?Math.min(100,Math.round(m/mx*100)):0;}
+function xpForLvl(L){return(L+1)*100;}
+function getLevel(xp){let L=0,t=0;while(t+xpForLvl(L)<=xp){t+=xpForLvl(L);L++;}return{level:L,xpIn:xp-t,xpNeed:xpForLvl(L)};}
+function getRank(l){if(l>=10)return'S';if(l>=7)return'A';if(l>=5)return'B';if(l>=3)return'C';if(l>=1)return'D';return'E';}
+function getStatus(s){return s.percent>=70?'surge':s.percent>=40?'stag':'risk';}
+function getStatusLabel(s){const t=getStatus(s);return t==='surge'?'🟢 Surge':t==='stag'?'🟡 Stagnant':'🔴 At Risk';}
+function pctColor(p){return p>=80?'var(--gr)':p>=50?'var(--or)':'var(--re)';}
+function masteryColor(p){if(p===null||p===undefined)return'#E5E5EA';if(p>=80)return'#30D158';if(p>=50)return'#FF9F0A';return'#FF3B30';}
+function computeRanks(arr){
+  const r=[];let i=0;
+  while(i<arr.length){let j=i;while(j<arr.length&&arr[j].xp===arr[i].xp)j++;for(let k=i;k<j;k++)r.push(i+1);i=j;}
+  return r;
+}
+
+function buildDefaultStudents(){
+  const all=[];
+  RAW_A.forEach((r,i)=>{
+    const id=i+1;
+    const chaps=CHAPTERS.map((_,ci)=>ci===1?r.percent:Math.min(100,Math.max(0,Math.round(r.percent+(Math.sin(id*7+ci*13)*25)))));
+    all.push({id,name:r.name,section:'A',marks:r.marks,percent:r.percent,polyRank:r.polyRank,
+      xp:calcXP(r.marks,r.percent),chapters:chaps,hwDone:0,hwCompleted:[],
+      streak:Math.floor(Math.abs(Math.sin(id*3))*5),achUnlocked:[],doubtsAsked:0,
+      testMarks:{},chapterScores:{}});
+  });
+  RAW_B.forEach((r,i)=>{
+    const id=i+40;
+    const chaps=CHAPTERS.map((_,ci)=>ci===1?r.percent:Math.min(100,Math.max(0,Math.round(r.percent+(Math.sin(id*7+ci*13)*25)))));
+    all.push({id,name:r.name,section:'B',marks:r.marks,percent:r.percent,polyRank:r.polyRank,
+      xp:calcXP(r.marks,r.percent),chapters:chaps,hwDone:0,hwCompleted:[],
+      streak:Math.floor(Math.abs(Math.sin(id*3))*5),achUnlocked:[],doubtsAsked:0,
+      testMarks:{},chapterScores:{}});
+  });
+  return all;
+}
+
+function defaultTests(){return[{id:1,name:'Polynomials — Main Test',chapterIdx:1,maxA:25,maxB:20}];}
+function defaultHW(){return[
+  {id:1,title:'Polynomials Ex 2.1',chapter:'Polynomials',chapterIdx:1,section:'both',xp:25,due:'2026-02-28',desc:'Complete Ex 1–10.'},
+  {id:2,title:'Real Numbers Ex 1.3',chapter:'Real Numbers',chapterIdx:0,section:'both',xp:20,due:'2026-02-25',desc:'Prove irrationality.'},
+];}
+function defaultAnnouncements(){return[
+  '🏆 THE SYSTEM v5 — Multi-device enabled!',
+  '👑 Sec A Toppers: ASHWATH N J & RISHI KESHEV G D (100%)',
+  '👑 Sec B Toppers: HARSHITHA M & SHINY BENILA B (100%)',
+  '❓ Doubts portal live — ask your teacher anything!',
+  '📖 Chapter Tests now track your progress per chapter!',
+];}
+// chapterTests structure: {chapterIdx:[{id,name,maxA,maxB}]}
+function defaultChapterTests(){
+  const ct={};
+  CHAPTERS.forEach((_,i)=>{ct[i]=[];});
+  ct[1]=[{id:1,name:'Polynomials Test 1',maxA:25,maxB:20}];
+  return ct;
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                  STORAGE ENGINE                         ║
+// ╚══════════════════════════════════════════════════════════╝
+function saveData(){
+  try{
+    localStorage.setItem(STORE_KEY,JSON.stringify({students,homeworks,announcements,chapterTests,doubts,hwNextId,ctNextId}));
+    flashSaved();updateStorageBar();
+  }catch(e){showToast('⚠️','Storage Full!','Consider clearing old data.');}
+}
+function loadData(){
+  try{
+    const raw=localStorage.getItem(STORE_KEY);
+    if(raw){
+      const d=JSON.parse(raw);
+      students=d.students||buildDefaultStudents();
+      homeworks=d.homeworks||defaultHW();
+      announcements=d.announcements||defaultAnnouncements();
+      chapterTests=d.chapterTests||defaultChapterTests();
+      doubts=d.doubts||[];
+      hwNextId=d.hwNextId||3;
+      ctNextId=d.ctNextId||2;
+      // Patch missing fields
+      students.forEach(s=>{
+        if(!s.testMarks)s.testMarks={};
+        if(!s.chapterScores)s.chapterScores={};
+        if(!s.hwCompleted)s.hwCompleted=[];
+        if(!s.achUnlocked)s.achUnlocked=[];
+        if(!s.doubtsAsked)s.doubtsAsked=0;
+      });
+      // Patch chapterTests if missing keys
+      CHAPTERS.forEach((_,i)=>{if(!chapterTests[i])chapterTests[i]=[];});
+    }else{resetData();}
+  }catch(e){resetData();}
+}
+function resetData(){
+  students=buildDefaultStudents();homeworks=defaultHW();announcements=defaultAnnouncements();
+  chapterTests=defaultChapterTests();doubts=[];hwNextId=3;ctNextId=2;saveData();
+}
+function flashSaved(){
+  const el=document.getElementById('saveInd');el.style.display='block';
+  el.style.animation='none';void el.offsetWidth;el.style.animation='';
+  setTimeout(()=>{el.style.display='none';},1800);
+}
+function updateStorageBar(){
+  try{
+    const used=new Blob([localStorage.getItem(STORE_KEY)||'']).size;
+    const max=5*1024*1024;const pct=Math.min(100,used/max*100);
+    const kb=(used/1024).toFixed(1);
+    const el=document.getElementById('stor-fill');
+    if(el){el.style.width=pct+'%';el.style.background=pct>75?'var(--re)':pct>40?'var(--or)':'var(--gr)';}
+    const lbl=document.getElementById('stor-lbl');if(lbl)lbl.textContent=kb+'KB/5MB';
+  }catch(e){}
+}
+
+// BroadcastChannel for same-origin multi-tab sync
+let bc;
+try{
+  bc=new BroadcastChannel('thesystem_sync');
+  bc.onmessage=()=>{loadData();if(currentUser==='admin')renderCurrentAdminPage();else if(currentUser)renderHunter();};
+}catch(e){}
+function broadcastSync(){try{if(bc)bc.postMessage('sync');}catch(e){}}
+function saveAndBroadcast(){saveData();broadcastSync();}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                    STATE                                 ║
+// ╚══════════════════════════════════════════════════════════╝
+let students,homeworks,announcements,chapterTests,doubts;
+let hwNextId,ctNextId;
+let currentUser=null;
+let rSecF='all',hwSecF='all';
+let charts={};
+let activeTestId=1;
+let currentAdminPage='dashboard';
+let ecmTestId=null,ecmSec='all';
+let answeringDoubtId=null;
+
+loadData();
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                    LOGIN                                 ║
+// ╚══════════════════════════════════════════════════════════╝
+function switchTab(tab){
+  document.querySelectorAll('.ltab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='overlord')||(i===1&&tab==='hunter')));
+  document.getElementById('ol-login').style.display=tab==='overlord'?'flex':'none';
+  document.getElementById('ht-login').style.display=tab==='hunter'?'flex':'none';
+  document.getElementById('lerr').style.display='none';
+}
+function populateSsel(){
+  const sel=document.getElementById('ssel');
+  sel.innerHTML=[...students].sort((a,b)=>a.name.localeCompare(b.name))
+    .map(s=>`<option value="${s.id}">${s.name} (Sec ${s.section})</option>`).join('');
+}
+function loginAdmin(){
+  if(document.getElementById('ap').value===ADMIN_PASS){currentUser='admin';startApp();}
+  else document.getElementById('lerr').style.display='block';
+}
+function loginStudent(){
+  const pass=document.getElementById('sp').value;
+  const id=parseInt(document.getElementById('ssel').value);
+  if(pass===STU_PASS){currentUser=students.find(s=>s.id===id);startApp();}
+  else document.getElementById('lerr').style.display='block';
+}
+function logout(){
+  currentUser=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  ['ap','sp'].forEach(id=>{try{document.getElementById(id).value='';}catch(e){}});
+  document.getElementById('lerr').style.display='none';
+  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});charts={};
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                   APP START                              ║
+// ╚══════════════════════════════════════════════════════════╝
+function startApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  buildNav();updateTopbar();rebuildTicker();
+  if(currentUser==='admin'){showPage('dashboard');renderDashboard();}
+  else{showPage('hunter');renderHunter();}
+}
+function buildNav(){
+  const nav=document.getElementById('tnav');nav.innerHTML='';
+  if(currentUser==='admin'){
+    document.getElementById('bellWrap').style.display='';
+    [['dashboard','📊 Dashboard'],['marks','✏️ Marks'],['chapters','📖 Tests'],['mastery','🗺️ Mastery'],['roster','📋 Roster'],['doubts','❓ Doubts'],['homework','📚 HW']].forEach(([id,lbl])=>{
+      const b=document.createElement('button');b.className='nbtn';b.textContent=lbl;b.dataset.page=id;
+      b.onclick=()=>navTo(id);nav.appendChild(b);
+    });
+  }else{
+    document.getElementById('bellWrap').style.display='none';
+    [['hunter','🏠 Home'],['hunter-chapters','📖 Tests'],['hunter-doubts','❓ Doubts']].forEach(([id,lbl])=>{
+      const b=document.createElement('button');b.className='nbtn';b.textContent=lbl;b.dataset.page=id;
+      b.onclick=()=>{showPage(id);if(id==='hunter')renderHunter();else if(id==='hunter-doubts')renderHunterDoubts();else if(id==='hunter-chapters')renderHunterChapters();};
+      nav.appendChild(b);
+    });
+  }
+}
+function navTo(id){
+  showPage(id);currentAdminPage=id;
+  if(id==='dashboard')renderDashboard();
+  else if(id==='marks')renderMarksPage();
+  else if(id==='chapters')renderChapters();
+  else if(id==='mastery')renderMastery();
+  else if(id==='roster')renderRoster();
+  else if(id==='doubts')renderDoubtsAdmin();
+  else if(id==='homework')renderAdminHW();
+}
+function renderCurrentAdminPage(){if(currentAdminPage)navTo(currentAdminPage);}
+function updateTopbar(){
+  if(currentUser==='admin'){document.getElementById('tav').textContent='👑';document.getElementById('tun').textContent='Overlord';}
+  else{document.getElementById('tav').textContent=currentUser.name.charAt(0);document.getElementById('tun').textContent=currentUser.name.split(' ')[0];}
+  updateBell();
+}
+function updateBell(){
+  const pending=doubts.filter(d=>!d.answer).length;
+  const badge=document.getElementById('bellBadge');
+  if(badge){badge.style.display=pending>0?'flex':'none';badge.textContent=pending>9?'9+':pending;}
+}
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pg=document.getElementById('page-'+id);if(pg)pg.classList.add('active');
+  document.querySelectorAll('.nbtn').forEach(b=>b.classList.toggle('active',b.dataset&&b.dataset.page===id));
+}
+function rebuildTicker(){
+  document.getElementById('tickerTrack').innerHTML=announcements.map(a=>`<span>${a} <span style="color:rgba(255,255,255,.3)">●</span></span>`).join('');
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                   DASHBOARD                              ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderDashboard(){
+  const pending=doubts.filter(d=>!d.answer).length;
+  document.getElementById('s-surge').textContent=students.filter(s=>getStatus(s)==='surge').length;
+  document.getElementById('s-stag').textContent=students.filter(s=>getStatus(s)==='stag').length;
+  document.getElementById('s-risk').textContent=students.filter(s=>getStatus(s)==='risk').length;
+  document.getElementById('s-doubts').textContent=pending;
+  document.getElementById('s-hw').textContent=students.reduce((a,s)=>a+s.hwDone,0);
+  document.getElementById('s-total').textContent=students.length;
+  const dc=document.getElementById('dash-doubt-cnt');if(dc)dc.textContent=pending>0?`(${pending})`:'';
+  updateBell();
+  const sA=students.filter(s=>s.section==='A'),sB=students.filter(s=>s.section==='B');
+  const avgA=(sA.reduce((a,s)=>a+s.percent,0)/sA.length).toFixed(1);
+  const avgB=(sB.reduce((a,s)=>a+s.percent,0)/sB.length).toFixed(1);
+  document.getElementById('avg-a').textContent=avgA+'%';
+  document.getElementById('avg-b').textContent=avgB+'%';
+  const tot=parseFloat(avgA)+parseFloat(avgB)||1;
+  document.getElementById('sba').style.width=(parseFloat(avgA)/tot*100).toFixed(1)+'%';
+  document.getElementById('sbb').style.width=(parseFloat(avgB)/tot*100).toFixed(1)+'%';
+  populateInjSel();renderHeatmap();renderDistChart();renderHOF();renderDashDoubts();updateStorageBar();
+}
+function populateInjSel(){
+  const sel=document.getElementById('inj-sel');if(!sel)return;
+  sel.innerHTML=[...students].sort((a,b)=>a.name.localeCompare(b.name))
+    .map(s=>`<option value="${s.id}">${s.name} (${s.section}) — ${s.xp}XP</option>`).join('');
+}
+function filterInj(){
+  const q=document.getElementById('inj-q').value.toLowerCase();
+  document.getElementById('inj-sel').innerHTML=[...students].sort((a,b)=>a.name.localeCompare(b.name))
+    .filter(s=>s.name.toLowerCase().includes(q))
+    .map(s=>`<option value="${s.id}">${s.name} (${s.section}) — ${s.xp}XP</option>`).join('');
+}
+function doInject(){
+  const id=parseInt(document.getElementById('inj-sel').value);
+  const amt=parseInt(document.getElementById('inj-amt').value);
+  const fb=document.getElementById('inj-fb');
+  if(!id||isNaN(amt)||amt<=0){fb.style.color='var(--re)';fb.textContent='⚠ Invalid';return;}
+  const s=students.find(x=>x.id===id);if(!s)return;
+  s.xp+=amt;saveAndBroadcast();
+  fb.style.color='var(--gr)';fb.textContent=`✅ +${amt}XP → ${s.name}`;
+  document.getElementById('inj-amt').value='';
+  populateInjSel();renderDashboard();showXPPop(amt);
+  setTimeout(()=>{fb.textContent='';},3000);
+}
+function renderHeatmap(){
+  const sorted=[...students].sort((a,b)=>b.xp-a.xp);
+  const ctx=document.getElementById('heatmap').getContext('2d');
+  if(charts.hm)charts.hm.destroy();
+  charts.hm=new Chart(ctx,{type:'bar',
+    data:{labels:sorted.map(s=>s.name.split(' ')[0]),datasets:[{data:sorted.map(s=>s.xp),
+      backgroundColor:sorted.map(s=>getStatus(s)==='surge'?'#30D158':getStatus(s)==='stag'?'#FF9F0A':'#FF3B30'),
+      borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{title:i=>sorted[i[0].dataIndex].name,label:i=>` ${i.raw}XP · ${sorted[i.dataIndex].percent}%`}}},
+      scales:{x:{display:false},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'JetBrains Mono',size:10}}}}}});
+}
+function renderDistChart(){
+  const b={'0–20%':0,'21–40%':0,'41–60%':0,'61–80%':0,'81–100%':0};
+  students.forEach(s=>{if(s.percent<=20)b['0–20%']++;else if(s.percent<=40)b['21–40%']++;else if(s.percent<=60)b['41–60%']++;else if(s.percent<=80)b['61–80%']++;else b['81–100%']++;});
+  const ctx=document.getElementById('distChart').getContext('2d');
+  if(charts.dist)charts.dist.destroy();
+  charts.dist=new Chart(ctx,{type:'doughnut',data:{labels:Object.keys(b),datasets:[{data:Object.values(b),
+    backgroundColor:['#FF3B30','#FF9F0A','#FFD60A','#30D158','#007AFF'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{family:'JetBrains Mono',size:9},padding:8}}}}});
+}
+function renderHOF(){
+  const sorted=[...students].sort((a,b)=>b.xp-a.xp).slice(0,5);
+  const medals=['🥇','🥈','🥉','4️⃣','5️⃣'];
+  document.getElementById('hof').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:11px;">
+    ${sorted.map((s,i)=>{const{level}=getLevel(s.xp);const hr=getRank(level);return`
+    <tr style="border-bottom:1px solid var(--bd);">
+      <td style="padding:8px 10px;font-size:15px;">${medals[i]}</td>
+      <td style="padding:8px 10px;font-weight:700;">${s.name}</td>
+      <td style="padding:8px 10px;"><span class="ssec ${s.section.toLowerCase()}">${s.section}</span></td>
+      <td style="padding:8px 10px;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--acc)">${s.xp}XP</td>
+      <td style="padding:8px 10px;font-family:'JetBrains Mono',monospace;font-weight:700;color:${pctColor(s.percent)}">${s.percent}%</td>
+      <td style="padding:8px 10px;"><div class="rb ${hr}">${hr}</div></td>
+      <td style="padding:8px 10px;"><span class="sbadge ${getStatus(s)}">${getStatusLabel(s)}</span></td>
+      <td style="padding:8px 10px;"><a href="#" onclick="viewStudentProfile(${s.id});return false;" style="font-size:10px;color:var(--acc);">View →</a></td>
+    </tr>`;}).join('')}</table>`;
+}
+function renderDashDoubts(){
+  const recent=doubts.filter(d=>!d.answer).slice(0,3);
+  const el=document.getElementById('dash-doubts-preview');if(!el)return;
+  if(!recent.length){el.innerHTML=`<div class="empty">No pending doubts 🎉</div>`;return;}
+  el.innerHTML=recent.map(d=>`<div class="dcard pending" style="margin-bottom:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+      <div class="dcq">${d.question}</div>
+      <span class="doubt-status pending">PENDING</span>
+    </div>
+    <div class="dcmeta"><span>👤 ${d.studentName}</span><span>📖 ${CHAPTERS[d.chapterIdx]||'General'}</span><span>🕐 ${d.topic}</span></div>
+    <div style="margin-top:8px;"><button class="btn btn-acc" style="padding:5px 12px;font-size:10px;" onclick="openAnswerDoubt(${d.id})">💬 Answer</button></div>
+  </div>`).join('');
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                MARKS PAGE                               ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderMarksPage(){
+  const sel=document.getElementById('marks-test-sel');if(!sel)return;
+  // Gather all tests from chapterTests
+  const allTests=[];
+  CHAPTERS.forEach((ch,ci)=>{(chapterTests[ci]||[]).forEach(t=>allTests.push({...t,chapterName:ch,chapterIdx:ci}));});
+  sel.innerHTML=allTests.map(t=>`<option value="${t.id}">${t.chapterName} — ${t.name}</option>`).join('');
+  if(allTests.length){
+    activeTestId=allTests[0].id;
+    const t=allTests[0];
+    document.getElementById('max-a').value=t.maxA;
+    document.getElementById('max-b').value=t.maxB;
+  }
+  renderMarksTable('A');renderMarksTable('B');renderLiveRank();
+}
+function onTestSelChange(){
+  const sel=document.getElementById('marks-test-sel');if(!sel)return;
+  activeTestId=parseInt(sel.value);
+  const t=getTestById(activeTestId);if(!t)return;
+  document.getElementById('max-a').value=t.maxA||25;
+  document.getElementById('max-b').value=t.maxB||20;
+  renderMarksTable('A');renderMarksTable('B');renderLiveRank();
+}
+function getTestById(id){
+  for(let ci=0;ci<CHAPTERS.length;ci++){const t=(chapterTests[ci]||[]).find(x=>x.id===id);if(t)return{...t,chapterIdx:ci};}
+  return null;
+}
+function renderMarksTable(sec){
+  const test=getTestById(activeTestId);
+  const maxMarks=sec==='A'?parseInt(document.getElementById('max-a').value)||(test?.maxA||25):parseInt(document.getElementById('max-b').value)||(test?.maxB||20);
+  const q=(document.getElementById('ms-'+sec.toLowerCase())?.value||'').toLowerCase();
+  const list=students.filter(s=>s.section===sec&&(!q||s.name.toLowerCase().includes(q)));
+  const tbody=document.getElementById('mtbody-'+sec.toLowerCase());if(!tbody)return;
+  tbody.innerHTML=list.map((s,i)=>{
+    const saved=s.chapterScores[activeTestId]!==undefined?s.chapterScores[activeTestId]:s.marks;
+    const pct=calcPct(saved,maxMarks);
+    return`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t2);">${i+1}</td>
+      <td style="font-weight:600;font-size:11px;">${s.name}</td>
+      <td><input class="mi" type="number" id="mi-${s.id}" value="${saved}" min="0" max="${maxMarks}" oninput="onMI(${s.id},${sec==='A'?1:0},this)" onblur="saveMI(${s.id})"></td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${pctColor(pct)};" id="pct-${s.id}">${pct}%</span></td>
+      <td><span class="sbadge ${pct>=70?'surge':pct>=40?'stag':'risk'}" id="st-${s.id}">${pct>=70?'🟢':pct>=40?'🟡':'🔴'}</span></td>
+    </tr>`;}).join('');
+}
+function onMI(sid,isA,inp){
+  const test=getTestById(activeTestId);
+  const maxMarks=isA?parseInt(document.getElementById('max-a').value)||(test?.maxA||25):parseInt(document.getElementById('max-b').value)||(test?.maxB||20);
+  const val=Math.max(0,Math.min(maxMarks,parseInt(inp.value)||0));
+  const pct=calcPct(val,maxMarks);
+  inp.classList.add('changed');inp.classList.remove('saved');
+  const pe=document.getElementById('pct-'+sid);if(pe){pe.textContent=pct+'%';pe.style.color=pctColor(pct);}
+  const se=document.getElementById('st-'+sid);if(se){se.className=`sbadge ${pct>=70?'surge':pct>=40?'stag':'risk'}`;se.textContent=pct>=70?'🟢':pct>=40?'🟡':'🔴';}
+  renderLiveRank();
+}
+function saveMI(sid){
+  const inp=document.getElementById('mi-'+sid);if(!inp)return;
+  const s=students.find(x=>x.id===sid);if(!s)return;
+  const test=getTestById(activeTestId);
+  const maxMarks=s.section==='A'?parseInt(document.getElementById('max-a').value)||(test?.maxA||25):parseInt(document.getElementById('max-b').value)||(test?.maxB||20);
+  const val=Math.max(0,Math.min(maxMarks,parseInt(inp.value)||0));
+  if(!s.chapterScores)s.chapterScores={};
+  s.chapterScores[activeTestId]=val;
+  // Update chapter mastery for that chapter
+  if(test){
+    const pct=calcPct(val,maxMarks);
+    if(!s.chapters)s.chapters=new Array(CHAPTERS.length).fill(0);
+    // Average all tests for this chapter
+    const chapTests=chapterTests[test.chapterIdx]||[];
+    const scores=chapTests.map(t=>s.chapterScores[t.id]!==undefined?calcPct(s.chapterScores[t.id],s.section==='A'?t.maxA:t.maxB):null).filter(x=>x!==null);
+    s.chapters[test.chapterIdx]=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):pct;
+    // If Polynomials (idx 1), update main marks
+    if(test.chapterIdx===1){s.marks=val;s.percent=pct;s.xp=calcXP(val,pct);s.polyRank=0;}
+  }
+  inp.classList.remove('changed');inp.classList.add('saved');
+  saveAndBroadcast();renderLiveRank();
+}
+function saveAllMarks(){
+  students.forEach(s=>{
+    const inp=document.getElementById('mi-'+s.id);if(!inp)return;
+    const test=getTestById(activeTestId);
+    const maxMarks=s.section==='A'?parseInt(document.getElementById('max-a').value)||(test?.maxA||25):parseInt(document.getElementById('max-b').value)||(test?.maxB||20);
+    const val=Math.max(0,Math.min(maxMarks,parseInt(inp.value)||0));
+    if(!s.chapterScores)s.chapterScores={};
+    s.chapterScores[activeTestId]=val;
+    const pct=calcPct(val,maxMarks);
+    if(test){
+      const chapTests=chapterTests[test.chapterIdx]||[];
+      const scores=chapTests.map(t=>s.chapterScores[t.id]!==undefined?calcPct(s.chapterScores[t.id],s.section==='A'?t.maxA:t.maxB):null).filter(x=>x!==null);
+      s.chapters[test.chapterIdx]=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):pct;
+      if(test.chapterIdx===1){s.marks=val;s.percent=pct;s.xp=calcXP(val,pct);}
+    }
+    inp.classList.remove('changed');inp.classList.add('saved');
+  });
+  recomputePolyRanks();saveAndBroadcast();
+  renderMarksTable('A');renderMarksTable('B');renderLiveRank();
+  showToast('💾','All Marks Saved!','Percentages & ranks updated.');
+}
+function recalcLive(){renderMarksTable('A');renderMarksTable('B');renderLiveRank();}
+function recomputePolyRanks(){
+  const sorted=[...students].sort((a,b)=>b.percent-a.percent);
+  let i=0;while(i<sorted.length){let j=i;while(j<sorted.length&&sorted[j].percent===sorted[i].percent)j++;for(let k=i;k<j;k++)sorted[k].polyRank=i+1;i=j;}
+}
+function renderLiveRank(){
+  const test=getTestById(activeTestId);
+  const live=students.map(s=>{
+    const inp=document.getElementById('mi-'+s.id);
+    const maxMarks=s.section==='A'?parseInt(document.getElementById('max-a')?.value)||(test?.maxA||25):parseInt(document.getElementById('max-b')?.value)||(test?.maxB||20);
+    const marks=inp?Math.max(0,Math.min(maxMarks,parseInt(inp.value)||0)):s.marks;
+    const pct=calcPct(marks,maxMarks);
+    return{...s,marks,percent:pct,_max:maxMarks};
+  });
+  const sorted=[...live].sort((a,b)=>b.percent-a.percent);
+  const ranks=[];let i=0;while(i<sorted.length){let j=i;while(j<sorted.length&&sorted[j].percent===sorted[i].percent)j++;for(let k=i;k<j;k++)ranks.push(i+1);i=j;}
+  const tbody=document.getElementById('lrankbody');if(!tbody)return;
+  tbody.innerHTML=sorted.map((s,idx)=>{
+    const{level}=getLevel(s.xp);const hr=getRank(level);const st=s.percent>=70?'surge':s.percent>=40?'stag':'risk';
+    return`<tr><td style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;">#${ranks[idx]}</td>
+      <td style="font-weight:600;font-size:11px;">${s.name}</td>
+      <td><span class="ssec ${s.section.toLowerCase()}">${s.section}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${pctColor(s.percent)};font-size:11px;">${s.marks}/${s._max}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${pctColor(s.percent)};font-size:11px;">${s.percent}%</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--acc);">${s.xp}</td>
+      <td><div class="rb ${hr}">${hr}</div></td>
+      <td><span class="sbadge ${st}">${getStatusLabel(s)}</span></td>
+    </tr>`;}).join('');
+}
+function openNewTestModal(){
+  const sel=document.getElementById('nt-chapter');if(!sel)return;
+  sel.innerHTML=CHAPTERS.map((c,i)=>`<option value="${i}">${c}</option>`).join('');
+  document.getElementById('newtest-modal').classList.add('open');
+}
+function createNewTest(){
+  const name=document.getElementById('nt-name').value.trim();
+  const ci=parseInt(document.getElementById('nt-chapter').value);
+  const maxA=parseInt(document.getElementById('nt-max-a').value)||25;
+  const maxB=parseInt(document.getElementById('nt-max-b').value)||20;
+  if(!name){alert('Enter test name');return;}
+  if(!chapterTests[ci])chapterTests[ci]=[];
+  chapterTests[ci].push({id:ctNextId++,name,maxA,maxB});
+  saveAndBroadcast();closeModal('newtest-modal');
+  ['nt-name','nt-max-a','nt-max-b'].forEach(id=>document.getElementById(id).value='');
+  renderMarksPage();showToast('✏️','Test Created!',name);
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║              CHAPTER TESTS PAGE                          ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderChapters(){
+  const container=document.getElementById('chapters-list');if(!container)return;
+  container.innerHTML=CHAPTERS.map((ch,ci)=>{
+    const tests=chapterTests[ci]||[];
+    const avgMastery=tests.length?Math.round(students.reduce((sum,s)=>{
+      const scores=tests.map(t=>{const v=s.chapterScores[t.id];return v!==undefined?calcPct(v,s.section==='A'?t.maxA:t.maxB):null;}).filter(x=>x!==null);
+      return sum+(scores.length?scores.reduce((a,b)=>a+b,0)/scores.length:0);
+    },0)/students.length):null;
+    const color=avgMastery!==null?pctColor(avgMastery):'var(--t3)';
+    return`<div class="ch-acc" id="chacc-${ci}">
+      <div class="ch-acc-hd" onclick="toggleChAcc(${ci})">
+        <div style="width:10px;height:10px;border-radius:3px;background:${avgMastery!==null?masteryColor(avgMastery):'var(--bd)'};flex-shrink:0;"></div>
+        <div class="ch-acc-title">${ch}</div>
+        <div class="ch-acc-meta">${tests.length} test${tests.length!==1?'s':''} ${avgMastery!==null?`· Class avg: <span style="color:${color};font-weight:700;">${avgMastery}%</span>`:''}</div>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:10px;" onclick="event.stopPropagation();openAddTestForChapter(${ci})">+ Test</button>
+        <span class="ch-acc-arrow">▼</span>
+      </div>
+      <div class="ch-acc-body">
+        ${tests.length?`
+        <div style="overflow-x:auto;">
+          <table class="st">
+            <thead><tr><th>Test</th><th>Max A</th><th>Max B</th><th>Avg A</th><th>Avg B</th><th>Class Avg</th><th>Actions</th></tr></thead>
+            <tbody>
+              ${tests.map(t=>{
+                const aScores=students.filter(s=>s.section==='A').map(s=>s.chapterScores[t.id]!==undefined?calcPct(s.chapterScores[t.id],t.maxA):null).filter(x=>x!==null);
+                const bScores=students.filter(s=>s.section==='B').map(s=>s.chapterScores[t.id]!==undefined?calcPct(s.chapterScores[t.id],t.maxB):null).filter(x=>x!==null);
+                const allS=[...aScores,...bScores];
+                const aA=aScores.length?Math.round(aScores.reduce((a,b)=>a+b,0)/aScores.length):null;
+                const aB=bScores.length?Math.round(bScores.reduce((a,b)=>a+b,0)/bScores.length):null;
+                const aC=allS.length?Math.round(allS.reduce((a,b)=>a+b,0)/allS.length):null;
+                return`<tr>
+                  <td style="font-weight:600;font-size:11px;">${t.name}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:10px;">${t.maxA}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:10px;">${t.maxB}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${aA!==null?pctColor(aA):'var(--t3)'};">${aA!==null?aA+'%':'–'}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:${aB!==null?pctColor(aB):'var(--t3)'};">${aB!==null?aB+'%':'–'}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:10px;color:${aC!==null?pctColor(aC):'var(--t3)'};">${aC!==null?aC+'%':'–'}</td>
+                  <td><button class="btn btn-acc" style="padding:4px 10px;font-size:10px;" onclick="openECM(${t.id})">✏️ Enter Marks</button></td>
+                </tr>`;}).join('')}
+            </tbody>
+          </table>
+        </div>`:`<div class="empty">No tests yet. Click "+ Test" to add one.</div>`}
+      </div>
+    </div>`;}).join('');
+}
+function toggleChAcc(ci){
+  const el=document.getElementById('chacc-'+ci);if(el)el.classList.toggle('open');
+}
+function openAddTestForChapter(ci){
+  const sel=document.getElementById('at-chapter');if(!sel)return;
+  sel.innerHTML=CHAPTERS.map((c,i)=>`<option value="${i}" ${i===ci?'selected':''}>${c}</option>`).join('');
+  document.getElementById('addtest-modal').classList.add('open');
+}
+function openAddTestModal(){
+  const sel=document.getElementById('at-chapter');if(!sel)return;
+  sel.innerHTML=CHAPTERS.map((c,i)=>`<option value="${i}">${c}</option>`).join('');
+  document.getElementById('addtest-modal').classList.add('open');
+}
+function createChapterTest(){
+  const ci=parseInt(document.getElementById('at-chapter').value);
+  const name=document.getElementById('at-name').value.trim();
+  const maxA=parseInt(document.getElementById('at-max-a').value)||25;
+  const maxB=parseInt(document.getElementById('at-max-b').value)||20;
+  if(!name){alert('Enter test name');return;}
+  if(!chapterTests[ci])chapterTests[ci]=[];
+  chapterTests[ci].push({id:ctNextId++,name,maxA,maxB});
+  saveAndBroadcast();closeModal('addtest-modal');
+  ['at-name','at-max-a','at-max-b'].forEach(id=>document.getElementById(id).value='');
+  renderChapters();showToast('📖','Test Added!',`${CHAPTERS[ci]} — ${name}`);
+}
+
+// Enter Chapter Marks Modal
+function openECM(testId){
+  ecmTestId=testId;ecmSec='all';
+  const t=getTestById(testId);if(!t)return;
+  document.getElementById('ecm-title').textContent=`✏️ ${CHAPTERS[t.chapterIdx]} — ${t.name}`;
+  document.getElementById('ecm-max-a').value=t.maxA;
+  document.getElementById('ecm-max-b').value=t.maxB;
+  refreshECM();
+  document.getElementById('enter-chap-marks-modal').classList.add('open');
+}
+function refreshECM(){
+  const t=getTestById(ecmTestId);if(!t)return;
+  const maxA=parseInt(document.getElementById('ecm-max-a').value)||t.maxA;
+  const maxB=parseInt(document.getElementById('ecm-max-b').value)||t.maxB;
+  ['all','a','b'].forEach(s=>document.getElementById('ecm-tab-'+s)?.classList.toggle('active',s===ecmSec));
+  let list=students;if(ecmSec==='A')list=students.filter(s=>s.section==='A');else if(ecmSec==='B')list=students.filter(s=>s.section==='B');
+  const tbody=document.getElementById('ecm-tbody');if(!tbody)return;
+  tbody.innerHTML=list.map((s,i)=>{
+    const maxM=s.section==='A'?maxA:maxB;
+    const saved=s.chapterScores[ecmTestId]!==undefined?s.chapterScores[ecmTestId]:0;
+    const pct=calcPct(saved,maxM);
+    return`<tr><td style="font-size:10px;color:var(--t2);font-family:'JetBrains Mono',monospace;">${i+1}</td>
+      <td style="font-weight:600;font-size:11px;">${s.name}</td>
+      <td><span class="ssec ${s.section.toLowerCase()}">${s.section}</span></td>
+      <td><input class="mi" type="number" id="ecmi-${s.id}" value="${saved}" min="0" max="${maxM}" oninput="onECMI(${s.id},this,${s.section==='A'?1:0})"></td>
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${pctColor(pct)};" id="ecmpct-${s.id}">${pct}%</span></td>
+      <td><span class="sbadge ${pct>=70?'surge':pct>=40?'stag':'risk'}" id="ecmst-${s.id}">${pct>=70?'🟢':pct>=40?'🟡':'🔴'}</span></td>
+    </tr>`;}).join('');
+}
+function onECMI(sid,inp,isA){
+  const t=getTestById(ecmTestId);if(!t)return;
+  const maxA=parseInt(document.getElementById('ecm-max-a').value)||t.maxA;
+  const maxB=parseInt(document.getElementById('ecm-max-b').value)||t.maxB;
+  const maxM=isA?maxA:maxB;
+  const val=Math.max(0,Math.min(maxM,parseInt(inp.value)||0));
+  const pct=calcPct(val,maxM);
+  inp.classList.add('changed');
+  const pe=document.getElementById('ecmpct-'+sid);if(pe){pe.textContent=pct+'%';pe.style.color=pctColor(pct);}
+  const se=document.getElementById('ecmst-'+sid);if(se){se.className=`sbadge ${pct>=70?'surge':pct>=40?'stag':'risk'}`;se.textContent=pct>=70?'🟢':pct>=40?'🟡':'🔴';}
+}
+function saveECMAll(){
+  const t=getTestById(ecmTestId);if(!t)return;
+  const maxA=parseInt(document.getElementById('ecm-max-a').value)||t.maxA;
+  const maxB=parseInt(document.getElementById('ecm-max-b').value)||t.maxB;
+  // update test maxA/maxB
+  const chapTests=chapterTests[t.chapterIdx];const tidx=chapTests.findIndex(x=>x.id===ecmTestId);
+  if(tidx>=0){chapTests[tidx].maxA=maxA;chapTests[tidx].maxB=maxB;}
+  students.forEach(s=>{
+    const inp=document.getElementById('ecmi-'+s.id);if(!inp)return;
+    const maxM=s.section==='A'?maxA:maxB;
+    const val=Math.max(0,Math.min(maxM,parseInt(inp.value)||0));
+    if(!s.chapterScores)s.chapterScores={};
+    s.chapterScores[ecmTestId]=val;
+    const pct=calcPct(val,maxM);
+    // Recompute chapter average
+    const scores=chapTests.map(tt=>s.chapterScores[tt.id]!==undefined?calcPct(s.chapterScores[tt.id],s.section==='A'?tt.maxA:tt.maxB):null).filter(x=>x!==null);
+    if(!s.chapters)s.chapters=new Array(CHAPTERS.length).fill(0);
+    s.chapters[t.chapterIdx]=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):pct;
+    if(t.chapterIdx===1){s.marks=val;s.percent=pct;s.xp=calcXP(val,pct);}
+    inp.classList.remove('changed');inp.classList.add('saved');
+  });
+  recomputePolyRanks();saveAndBroadcast();
+  closeModal('enter-chap-marks-modal');renderChapters();
+  showToast('💾','Chapter Marks Saved!',`${CHAPTERS[t.chapterIdx]} — ${t.name}`);
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                  MASTERY GRID                            ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderMastery(){
+  const sec=document.getElementById('mastery-sec-sel')?.value||'all';
+  let list=sec==='all'?students:students.filter(s=>s.section===sec);
+  const sorted=[...list].sort((a,b)=>b.xp-a.xp);
+  const wrap=document.getElementById('mastery-wrap');if(!wrap)return;
+  const cellSize=window.innerWidth<600?22:28;
+  const nameW=window.innerWidth<600?90:160;
+  // Build HTML grid
+  let html=`<div style="overflow-x:auto;">
+    <div style="min-width:${nameW+CHAPTERS.length*(cellSize+2)+20}px;">
+      <!-- Header row -->
+      <div style="display:flex;gap:2px;margin-bottom:4px;padding-left:${nameW+8}px;">
+        ${CHAPTERS.map((ch,ci)=>`<div style="width:${cellSize}px;font-size:8px;font-weight:700;color:var(--t2);text-align:center;transform:rotate(-40deg);transform-origin:bottom left;height:60px;display:flex;align-items:flex-end;white-space:nowrap;padding-left:2px;">${ch}</div>`).join('')}
+      </div>`;
+  sorted.forEach(s=>{
+    const{level}=getLevel(s.xp);const hr=getRank(level);
+    html+=`<div style="display:flex;align-items:center;gap:2px;margin-bottom:2px;">
+      <div style="width:${nameW}px;font-size:10px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:8px;display:flex;align-items:center;gap:5px;flex-shrink:0;">
+        <div class="rb ${hr}" style="flex-shrink:0;">${hr}</div>
+        <span title="${s.name}">${s.name.split(' ')[0]}</span>
+      </div>
+      ${CHAPTERS.map((ch,ci)=>{
+        const pct=s.chapters&&s.chapters[ci]!==undefined?s.chapters[ci]:null;
+        const hasTests=(chapterTests[ci]||[]).length>0;
+        const bg=hasTests?masteryColor(pct):'#E5E5EA';
+        const display=pct!==null?pct+'%':'–';
+        return`<div style="width:${cellSize}px;height:${cellSize}px;border-radius:4px;background:${bg};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:${cellSize<25?7:8}px;font-weight:700;color:${pct!==null&&pct>=0?'#fff':'var(--t3)'};cursor:pointer;position:relative;" title="${s.name} — ${ch}: ${display}"
+          onclick="viewStudentProfile(${s.id})">${display}</div>`;}).join('')}
+    </div>`;
+  });
+  html+=`</div></div>`;
+  // Chapter summary row
+  html+=`<div style="margin-top:16px;"><div class="ct"><div class="dot"></div>Chapter Class Averages</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      ${CHAPTERS.map((ch,ci)=>{
+        const tests=chapterTests[ci]||[];
+        const vals=sorted.map(s=>s.chapters&&s.chapters[ci]!==undefined?s.chapters[ci]:null).filter(x=>x!==null);
+        const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null;
+        return`<div style="background:${avg!==null?masteryColor(avg)+'22':'var(--sf2)'};border:1px solid ${avg!==null?masteryColor(avg):'var(--bd)'};border-radius:8px;padding:8px 12px;min-width:120px;">
+          <div style="font-size:9px;font-weight:700;color:var(--t2);">${ch}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;color:${avg!==null?masteryColor(avg):'var(--t3)'};">${avg!==null?avg+'%':'–'}</div>
+          <div style="font-size:9px;color:var(--t3);font-family:'JetBrains Mono',monospace;">${tests.length} test${tests.length!==1?'s':''}</div>
+        </div>`;}).join('')}
+    </div>`;
+  wrap.innerHTML=html;
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                    ROSTER                                ║
+// ╚══════════════════════════════════════════════════════════╝
+function setSec(sec){rSecF=sec;['all','A','B'].forEach(s=>document.getElementById('f-'+s)?.classList.toggle('active',s===sec));renderRoster();}
+function renderRoster(){
+  const q=(document.getElementById('rsearch')?.value||'').toLowerCase();
+  const sortBy=document.getElementById('sort-sel')?.value||'xp';
+  let list=[...students];
+  if(rSecF!=='all')list=list.filter(s=>s.section===rSecF);
+  if(q)list=list.filter(s=>s.name.toLowerCase().includes(q));
+  if(sortBy==='xp')list.sort((a,b)=>b.xp-a.xp);
+  else if(sortBy==='name')list.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sortBy==='pct')list.sort((a,b)=>b.percent-a.percent);
+  else if(sortBy==='level'){list.sort((a,b)=>getLevel(b.xp).level-getLevel(a.xp).level);}
+  const allSorted=[...students].sort((a,b)=>b.xp-a.xp);
+  const allRanks=computeRanks(allSorted);
+  const tbody=document.getElementById('rtbody');if(!tbody)return;
+  if(!list.length){tbody.innerHTML=`<tr><td colspan="13"><div class="empty">No hunters found.</div></td></tr>`;return;}
+  const elites=['AASRITHA P','GANDLA NAGA SUHAS','B JITHESH'];
+  tbody.innerHTML=list.map(s=>{
+    const{level}=getLevel(s.xp);const hr=getRank(level);
+    const gi=allSorted.findIndex(x=>x.id===s.id);const gRank=allRanks[gi];
+    const st=getStatus(s);
+    const totalHW=homeworks.filter(h=>h.section==='both'||h.section===s.section).length;
+    const myDoubts=doubts.filter(d=>d.studentId===s.id).length;
+    const isElite=elites.includes(s.name);
+    return`<tr>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--t2);font-size:10px;">#${gRank}</td>
+      <td style="font-weight:600;font-size:11px;"><a href="#" onclick="viewStudentProfile(${s.id});return false;" style="color:var(--tx);text-decoration:none;">${isElite?'👑 ':''}${s.name}</a></td>
+      <td><span class="ssec ${s.section.toLowerCase()}">${s.section}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${pctColor(s.percent)};font-size:11px;">${s.marks}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:${pctColor(s.percent)};font-size:11px;">${s.percent}%</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--acc);font-size:11px;">${s.xp}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;">Lv.${level}</td>
+      <td><div class="rb ${hr}">${hr}</div></td>
+      <td><span class="sbadge ${st}">${getStatusLabel(s)}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;">${s.hwDone}/${totalHW}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;">${s.streak>0?'🔥'+s.streak:'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;">${myDoubts>0?'❓'+myDoubts:'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;">#${s.polyRank||'–'}</td>
+    </tr>`;}).join('');
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║               STUDENT PROFILE (Admin)                   ║
+// ╚══════════════════════════════════════════════════════════╝
+function viewStudentProfile(sid){
+  const s=students.find(x=>x.id===sid);if(!s)return;
+  showPage('student-profile');
+  document.getElementById('sp-title').textContent=s.name;
+  document.getElementById('sp-subtitle').textContent=`Section ${s.section} · Poly Rank #${s.polyRank}`;
+  const{level,xpIn,xpNeed}=getLevel(s.xp);const hr=getRank(level);const st=getStatus(s);
+  const prog=Math.round(xpIn/xpNeed*100);
+  const myDoubts=doubts.filter(d=>d.studentId===s.id);
+  const myHW=homeworks.filter(h=>h.section==='both'||h.section===s.section);
+  const content=document.getElementById('sp-content');
+  content.innerHTML=`
+    <div class="g4" style="margin-bottom:14px;">
+      <div class="sc ${st}"><div class="sl">Score</div><div class="sv" style="color:${pctColor(s.percent)}">${s.percent}%</div><div class="ss">${s.marks} marks</div></div>
+      <div class="sc"><div class="sl">XP</div><div class="sv" style="color:var(--acc)">${s.xp}</div><div class="ss">Level ${level} · ${hr}-Rank</div></div>
+      <div class="sc"><div class="sl">HW Done</div><div class="sv">${s.hwDone}/${myHW.length}</div></div>
+      <div class="sc"><div class="sl">Streak</div><div class="sv">${s.streak>0?'🔥'+s.streak:'0'}</div></div>
+    </div>
+    <div class="g2" style="margin-bottom:14px;">
+      <div class="card">
+        <div class="ct"><div class="dot"></div>Level Progress</div>
+        <div style="font-size:11px;color:var(--t2);margin-bottom:6px;">Level ${level} → ${level+1}</div>
+        <div class="pb" style="height:10px;"><div class="pf" style="width:${prog}%"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);"><span>${xpIn} XP</span><span>${xpNeed} XP</span></div>
+      </div>
+      <div class="card">
+        <div class="ct"><div class="dot"></div>Chapter Mastery Summary</div>
+        ${CHAPTERS.map((ch,ci)=>{const pct=s.chapters&&s.chapters[ci]!==undefined?s.chapters[ci]:null;const tests=chapterTests[ci]||[];return`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+            <div style="font-size:10px;font-weight:600;width:130px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${ch}</div>
+            <div class="pb" style="flex:1;height:6px;"><div class="pf" style="width:${pct||0}%;background:${masteryColor(pct||0)}"></div></div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;width:36px;text-align:right;color:${masteryColor(pct||0)};">${pct!==null?pct+'%':'–'}</div>
+            <div style="font-size:9px;color:var(--t3);width:30px;font-family:'JetBrains Mono',monospace;">${tests.length}T</div>
+          </div>`;}).join('')}
+      </div>
+    </div>
+    <div class="g2" style="margin-bottom:14px;">
+      <div class="card">
+        <div class="ct"><div class="dot"></div>Chapter Test Results</div>
+        ${CHAPTERS.map((ch,ci)=>{
+          const tests=chapterTests[ci]||[];if(!tests.length)return'';
+          return`<div style="margin-bottom:10px;"><div style="font-size:10px;font-weight:700;margin-bottom:5px;color:var(--acc);">${ch}</div>
+            ${tests.map(t=>{const maxM=s.section==='A'?t.maxA:t.maxB;const score=s.chapterScores[t.id];const pct=score!==undefined?calcPct(score,maxM):null;
+              return`<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd);">
+                <span style="font-size:11px;">${t.name}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${pct!==null?pctColor(pct):'var(--t3)'};">${pct!==null?score+'/'+maxM+' ('+pct+'%)':'Not taken'}</span>
+              </div>`;}).join('')}
+          </div>`;}).join('')}
+      </div>
+      <div class="card">
+        <div class="ct"><div class="dot"></div>Doubts (${myDoubts.length})</div>
+        ${myDoubts.length?myDoubts.map(d=>`<div class="dcard ${d.answer?'answered':'pending'}" style="margin-bottom:8px;">
+          <div class="dcq">${d.question}</div>
+          <div class="dcmeta"><span>📖 ${CHAPTERS[d.chapterIdx]||'—'}</span><span>🏷️ ${d.topic}</span></div>
+          ${d.answer?`<div class="dca">✅ ${d.answer}</div>`:`<div style="margin-top:6px;"><button class="btn btn-acc" style="padding:4px 10px;font-size:10px;" onclick="openAnswerDoubt(${d.id})">💬 Answer</button></div>`}
+        </div>`).join(''):`<div class="empty">No doubts yet.</div>`}
+      </div>
+    </div>
+    <div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-acc" onclick="openInjectForStudent(${s.id})">⚡ Inject XP</button>
+      <button class="btn btn-ghost" onclick="showPage('roster');renderRoster()">← Back to Roster</button>
+    </div>`;
+  // Radar chart
+  setTimeout(()=>{
+    const canvas=document.createElement('canvas');canvas.id='sp-radar';canvas.style.height='220px';
+    const radarWrap=document.createElement('div');radarWrap.className='card';radarWrap.style.marginBottom='14px';
+    radarWrap.innerHTML=`<div class="ct"><div class="dot"></div>Mastery Radar</div>`;
+    radarWrap.appendChild(canvas);content.insertBefore(radarWrap,content.children[2]);
+    if(charts.spRadar)charts.spRadar.destroy();
+    charts.spRadar=new Chart(canvas.getContext('2d'),{type:'radar',data:{labels:CHAPTERS,datasets:[{label:s.name,data:s.chapters||[],backgroundColor:'rgba(0,122,255,.1)',borderColor:'#007AFF',borderWidth:2,pointBackgroundColor:'#007AFF',pointRadius:3}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{font:{family:'JetBrains Mono',size:8}},pointLabels:{font:{family:'Syne',size:9,weight:'600'}}}}}});
+  },50);
+}
+function openInjectForStudent(sid){
+  const s=students.find(x=>x.id===sid);if(!s)return;
+  const amt=parseInt(prompt(`Inject XP for ${s.name}\nCurrent XP: ${s.xp}\n\nEnter amount:`));
+  if(!isNaN(amt)&&amt>0){s.xp+=amt;saveAndBroadcast();showToast('⚡','XP Injected!',`+${amt} → ${s.name}`);viewStudentProfile(sid);}
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                    DOUBTS                                ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderDoubtsAdmin(){
+  const filter=document.getElementById('doubt-filter')?.value||'all';
+  const pending=doubts.filter(d=>!d.answer).length;
+  const answered=doubts.filter(d=>d.answer).length;
+  document.getElementById('d-pending').textContent=pending;
+  document.getElementById('d-answered').textContent=answered;
+  updateBell();
+  let list=[...doubts].sort((a,b)=>(!a.answer?0:1)-(!b.answer?0:1)||(b.id-a.id));
+  if(filter==='pending')list=list.filter(d=>!d.answer);
+  else if(filter==='answered')list=list.filter(d=>d.answer);
+  const el=document.getElementById('doubts-admin-list');if(!el)return;
+  if(!list.length){el.innerHTML=`<div class="empty">No doubts found 🎉</div>`;return;}
+  el.innerHTML=list.map(d=>`<div class="dcard ${d.answer?'answered':'pending'}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+      <div class="dcq" style="flex:1;">${d.question}</div>
+      <span class="doubt-status ${d.answer?'answered':'pending'}">${d.answer?'ANSWERED':'PENDING'}</span>
+    </div>
+    <div class="dcmeta">
+      <span>👤 ${d.studentName}</span>
+      <span><span class="ssec ${d.section?.toLowerCase()}">${d.section||'?'}</span></span>
+      <span>📖 ${CHAPTERS[d.chapterIdx]||'General'}</span>
+      <span>🏷️ ${d.topic||'—'}</span>
+      <span>🕐 ${d.timestamp||'—'}</span>
+    </div>
+    ${d.answer?`<div class="dca">💬 ${d.answer}</div><div style="margin-top:8px;"><button class="btn btn-ghost" style="padding:4px 10px;font-size:10px;" onclick="openAnswerDoubt(${d.id})">✏️ Edit Answer</button></div>`:`<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-acc" onclick="openAnswerDoubt(${d.id})">💬 Answer Now</button>
+      <button class="btn btn-re" onclick="deleteDoubt(${d.id})" style="padding:8px 12px;font-size:11px;">🗑️</button>
+    </div>`}
+  </div>`).join('');
+}
+function openAnswerDoubt(id){
+  answeringDoubtId=id;
+  const d=doubts.find(x=>x.id===id);if(!d)return;
+  document.getElementById('doubt-q-preview').innerHTML=`<strong>${d.studentName}</strong>: ${d.question}<br><small style="color:var(--t2);">📖 ${CHAPTERS[d.chapterIdx]||'—'} · ${d.topic||'—'}</small>`;
+  document.getElementById('doubt-answer-text').value=d.answer||'';
+  document.getElementById('doubt-answer-modal').classList.add('open');
+}
+function submitAnswer(){
+  const d=doubts.find(x=>x.id===answeringDoubtId);if(!d)return;
+  const ans=document.getElementById('doubt-answer-text').value.trim();
+  if(!ans){alert('Please type an answer.');return;}
+  d.answer=ans;d.answeredAt=new Date().toLocaleDateString();
+  saveAndBroadcast();closeModal('doubt-answer-modal');
+  renderDoubtsAdmin();showToast('✅','Answered!','Student will see your response.');
+  updateBell();
+}
+function deleteDoubt(id){
+  if(!confirm('Delete this doubt?'))return;
+  doubts=doubts.filter(d=>d.id!==id);saveAndBroadcast();renderDoubtsAdmin();
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                   HOMEWORK                               ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderAdminHW(){
+  const tc=students.reduce((a,s)=>a+s.hwDone,0);
+  const mp=students.reduce((a,s)=>a+homeworks.filter(h=>h.section==='both'||h.section===s.section).length,0);
+  const rate=mp?Math.round(tc/mp*100):0;
+  document.getElementById('hw-stat-cards').innerHTML=`
+    <div class="sc gold"><div class="sl">📋 Assignments</div><div class="sv">${homeworks.length}</div></div>
+    <div class="sc surge"><div class="sl">✅ Done</div><div class="sv">${tc}</div></div>
+    <div class="sc ${rate>=60?'surge':rate>=30?'stag':'risk'}"><div class="sl">📈 Rate</div><div class="sv">${rate}%</div></div>`;
+  renderHWTable();
+}
+function renderHWTable(){
+  const q=(document.getElementById('hwsearch')?.value||'').toLowerCase();
+  let list=[...students];
+  if(hwSecF!=='all')list=list.filter(s=>s.section===hwSecF);
+  if(q)list=list.filter(s=>s.name.toLowerCase().includes(q));
+  list.sort((a,b)=>b.hwDone-a.hwDone);
+  document.getElementById('hwtbody').innerHTML=list.map((s,i)=>{
+    const tot=homeworks.filter(h=>h.section==='both'||h.section===s.section).length;
+    const rate=tot?Math.round(s.hwDone/tot*100):0;
+    return`<tr>
+      <td style="font-size:9px;color:var(--t2);font-family:'JetBrains Mono',monospace;">${i+1}</td>
+      <td style="font-weight:600;font-size:11px;">${s.name}</td>
+      <td><span class="ssec ${s.section.toLowerCase()}">${s.section}</span></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--gr);font-size:11px;">${s.hwDone}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t2);">${tot}</td>
+      <td style="min-width:100px;"><div style="display:flex;align-items:center;gap:6px;"><div class="pb" style="flex:1;height:5px;"><div class="pf" style="width:${rate}%;background:${pctColor(rate)};"></div></div><span style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;">${rate}%</span></div></td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:10px;">${s.streak>0?'🔥'+s.streak:'—'}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--acc);font-size:10px;">+${s.hwDone*25}XP</td>
+    </tr>`;}).join('');
+}
+function openHWModal(){
+  const sel=document.getElementById('hw-chapter-sel');if(sel)sel.innerHTML=CHAPTERS.map((c,i)=>`<option value="${i}">${c}</option>`).join('');
+  document.getElementById('hw-due').valueAsDate=new Date(Date.now()+7*86400000);
+  document.getElementById('hw-modal').classList.add('open');
+}
+function addHomework(){
+  const title=document.getElementById('hw-title').value.trim();
+  const sec=document.getElementById('hw-sec').value;
+  const ci=parseInt(document.getElementById('hw-chapter-sel').value);
+  const xp=parseInt(document.getElementById('hw-xp').value)||25;
+  const due=document.getElementById('hw-due').value;
+  const desc=document.getElementById('hw-desc').value.trim();
+  if(!title){alert('Enter a title.');return;}
+  homeworks.push({id:hwNextId++,title,chapter:CHAPTERS[ci],chapterIdx:ci,section:sec,xp,due,desc});
+  saveAndBroadcast();closeModal('hw-modal');
+  ['hw-title','hw-desc'].forEach(id=>document.getElementById(id).value='');
+  showToast('📚','Homework Assigned!',title);renderAdminHW();
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║               ANNOUNCEMENTS                              ║
+// ╚══════════════════════════════════════════════════════════╝
+function openAnnoModal(){document.getElementById('anno-modal').classList.add('open');}
+function addAnnouncement(){
+  const txt=document.getElementById('anno-text').value.trim();if(!txt)return;
+  announcements.unshift('📢 '+txt);saveAndBroadcast();
+  closeModal('anno-modal');document.getElementById('anno-text').value='';
+  rebuildTicker();showToast('📢','Broadcast!',txt.substring(0,40));
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║               HUNTER PORTAL                             ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderHunter(){
+  const s=students.find(x=>x.id===currentUser.id);if(!s)return;currentUser=s;
+  const{level,xpIn,xpNeed}=getLevel(s.xp);const prog=Math.round(xpIn/xpNeed*100);
+  const hr=getRank(level);const st=getStatus(s);
+  const allSorted=[...students].sort((a,b)=>b.xp-a.xp);
+  const allRanks=computeRanks(allSorted);const gi=allSorted.findIndex(x=>x.id===s.id);const gR=allRanks[gi];
+  const secS=[...students].filter(x=>x.section===s.section).sort((a,b)=>b.xp-a.xp);
+  const secRanks=computeRanks(secS);const si=secS.findIndex(x=>x.id===s.id);const sR=secRanks[si];
+  document.getElementById('hav').textContent=s.name.charAt(0);
+  document.getElementById('hname').textContent=s.name;
+  document.getElementById('hsec').textContent=`SECTION ${s.section} · GLOBAL #${gR} · POLY #${s.polyRank||'–'}`;
+  document.getElementById('hxpd').textContent=`${s.xp} XP · Level ${level}`;
+  document.getElementById('hpfill').style.width=prog+'%';
+  document.getElementById('hxpn').textContent=`${xpNeed-xpIn} XP to Level ${level+1}`;
+  document.getElementById('hlvl').textContent=level;
+  document.getElementById('hrkwrap').innerHTML=`<div class="rb ${hr}" style="width:auto;padding:0 10px;height:24px;font-size:11px;">${hr}-RANK</div>`;
+  document.getElementById('hstreak').textContent=s.streak>0?`🔥 ${s.streak} day streak`:'';
+  document.getElementById('hm').textContent=s.marks;document.getElementById('hm').style.color=pctColor(s.percent);
+  document.getElementById('hpct').textContent=s.percent+'%';document.getElementById('hpct').style.color=pctColor(s.percent);
+  document.getElementById('hgr').textContent='#'+gR;document.getElementById('hcr').textContent='#'+sR;
+  document.getElementById('hnlvl').textContent=level+1;
+  document.getElementById('hpf').style.width=prog+'%';
+  document.getElementById('hxl').textContent=xpIn+'XP';document.getElementById('hxt').textContent=xpNeed+'XP';
+  document.getElementById('h-status-row').innerHTML=`<span class="sbadge ${st}">${getStatusLabel(s)}</span>`;
+  // Radar
+  const rctx=document.getElementById('radar').getContext('2d');
+  if(charts.radar)charts.radar.destroy();
+  charts.radar=new Chart(rctx,{type:'radar',data:{labels:CHAPTERS,datasets:[{label:s.name,data:s.chapters||[],backgroundColor:'rgba(0,122,255,.1)',borderColor:'#007AFF',borderWidth:2,pointBackgroundColor:'#007AFF',pointRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{stepSize:25,font:{family:'JetBrains Mono',size:8},color:'#AEAEB2'},grid:{color:'rgba(0,0,0,.05)'},angleLines:{color:'rgba(0,0,0,.05)'},pointLabels:{font:{family:'Syne',size:9,weight:'600'},color:'#1C1C1E'}}}}});
+  renderHunterChapterPerf(s);renderHunterAch(s);renderHunterHW(s);renderHunterLB(s);
+}
+function renderHunterChapterPerf(s){
+  const el=document.getElementById('hunter-chapter-perf');if(!el)return;
+  el.innerHTML=CHAPTERS.map((ch,ci)=>{
+    const tests=chapterTests[ci]||[];if(!tests.length)return`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd);"><div style="font-size:11px;font-weight:600;width:160px;flex-shrink:0;color:var(--t3);">${ch}</div><div style="font-size:9px;color:var(--t3);font-family:'JetBrains Mono',monospace;">No tests yet</div></div>`;
+    const pct=s.chapters&&s.chapters[ci]!==undefined?s.chapters[ci]:null;
+    return`<div style="padding:7px 0;border-bottom:1px solid var(--bd);">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="font-size:11px;font-weight:700;width:150px;flex-shrink:0;">${ch}</div>
+        <div class="pb" style="flex:1;min-width:80px;height:7px;"><div class="pf" style="width:${pct||0}%;background:${masteryColor(pct||0)};"></div></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;width:36px;color:${masteryColor(pct||0)};">${pct!==null?pct+'%':'–'}</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          ${tests.map(t=>{const maxM=s.section==='A'?t.maxA:t.maxB;const score=s.chapterScores[t.id];const tp=score!==undefined?calcPct(score,maxM):null;
+            return`<span style="font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;border-radius:4px;background:${tp!==null?masteryColor(tp)+'22':'var(--sf2)'};color:${tp!==null?masteryColor(tp):'var(--t3)'};font-weight:700;" title="${t.name}">${t.name}: ${tp!==null?score+'/'+maxM:'–'}</span>`;}).join('')}
+        </div>
+      </div>
+    </div>`;}).join('');
+}
+function renderHunterAch(s){
+  document.getElementById('hunter-ach').innerHTML=ACHIEVEMENTS.map(a=>{const u=a.check(s,homeworks);return`<div class="achcard ${u?'unlocked':'locked'}" title="${a.desc}"><div class="achicon">${a.icon}</div><div class="achname">${a.name}</div><div class="achdesc">${a.desc}</div><div class="achxp">+${a.xp}XP</div></div>`;}).join('');
+}
+function renderHunterHW(s){
+  const myHW=homeworks.filter(h=>h.section==='both'||h.section===s.section);
+  const el=document.getElementById('hunter-hw');if(!el)return;
+  if(!myHW.length){el.innerHTML=`<div class="empty">No assignments yet.</div>`;return;}
+  el.innerHTML=myHW.map(hw=>{
+    const done=s.hwCompleted&&s.hwCompleted.includes(hw.id);
+    const diff=hw.due?(new Date(hw.due)-new Date())/(86400000):99;
+    const dc=diff<0?'late':diff<2?'soon':'ok';
+    const dl=diff<0?'OVERDUE':diff<1?'TODAY':hw.due||'—';
+    return`<div class="hwcard">
+      <div class="hwchk ${done?'done':''}" onclick="toggleHW(${s.id},${hw.id})">${done?'✓':''}</div>
+      <div class="hwinfo"><div class="hwtit" style="${done?'text-decoration:line-through;color:var(--t2)':''}">${hw.title}</div>
+        <div class="hwmet">${hw.chapter} · +${hw.xp}XP</div></div>
+      <span class="hwdue ${done?'ok':dc}">${done?'✓':dl}</span>
+    </div>`;}).join('');
+}
+function toggleHW(sid,hwid){
+  const s=students.find(x=>x.id===sid);if(!s)return;
+  const hw=homeworks.find(h=>h.id===hwid);if(!hw)return;
+  if(!s.hwCompleted)s.hwCompleted=[];
+  if(s.hwCompleted.includes(hwid)){s.hwCompleted=s.hwCompleted.filter(id=>id!==hwid);s.hwDone=Math.max(0,s.hwDone-1);s.xp=Math.max(0,s.xp-hw.xp);}
+  else{s.hwCompleted.push(hwid);s.hwDone++;s.xp+=hw.xp;showXPPop(hw.xp);showToast('⚡','XP Earned!',`+${hw.xp}XP — "${hw.title}"`);checkAch(s);}
+  currentUser=s;saveAndBroadcast();renderHunter();
+}
+function renderHunterLB(cs){
+  const sorted=[...students].sort((a,b)=>b.xp-a.xp).slice(0,10);
+  const ranks=computeRanks(sorted);const medals=['🥇','🥈','🥉'];
+  document.getElementById('hunter-lb').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:11px;">
+    ${sorted.map((s,i)=>{const{level}=getLevel(s.xp);const hr=getRank(level);const isMe=s.id===cs.id;
+    return`<tr style="border-bottom:1px solid var(--bd);background:${isMe?'var(--acl)':''};">
+      <td style="padding:7px 10px;font-size:13px;">${medals[i]||'#'+(i+1)}</td>
+      <td style="padding:7px 10px;font-weight:${isMe?800:600};color:${isMe?'var(--acc)':'inherit'};font-size:11px;">${s.name}${isMe?' 👈':''}</td>
+      <td style="padding:7px 10px;"><span class="ssec ${s.section.toLowerCase()}">${s.section}</span></td>
+      <td style="padding:7px 10px;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--acc);font-size:10px;">${s.xp}XP</td>
+      <td style="padding:7px 10px;font-family:'JetBrains Mono',monospace;font-weight:700;color:${pctColor(s.percent)};font-size:10px;">${s.percent}%</td>
+      <td style="padding:7px 10px;"><div class="rb ${hr}">${hr}</div></td>
+    </tr>`;}).join('')}</table>`;
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║            HUNTER DOUBTS PAGE                           ║
+// ╚══════════════════════════════════════════════════════════╝
+function renderHunterDoubts(){
+  const s=currentUser;if(!s||s==='admin')return;
+  const myDoubts=doubts.filter(d=>d.studentId===s.id).sort((a,b)=>b.id-a.id);
+  const el=document.getElementById('hunter-doubts-list');if(!el)return;
+  if(!myDoubts.length){el.innerHTML=`<div class="empty">No doubts yet. Click "+ Ask a Doubt" to get started!</div>`;return;}
+  el.innerHTML=myDoubts.map(d=>`<div class="dcard ${d.answer?'answered':'pending'}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap;">
+      <div class="dcq" style="flex:1;">${d.question}</div>
+      <span class="doubt-status ${d.answer?'answered':'pending'}">${d.answer?'ANSWERED':'PENDING'}</span>
+    </div>
+    <div class="dcmeta"><span>📖 ${CHAPTERS[d.chapterIdx]||'General'}</span><span>🏷️ ${d.topic}</span><span>🕐 ${d.timestamp}</span></div>
+    ${d.answer?`<div class="dca"><strong>Teacher:</strong> ${d.answer}<br><small style="color:var(--t3);">Answered ${d.answeredAt||''}</small></div>`:
+    `<div class="dca" style="color:var(--or);font-style:italic;">⏳ Waiting for teacher response...</div>`}
+  </div>`).join('');
+}
+function openAskDoubt(){
+  const sel=document.getElementById('ask-chapter');if(sel)sel.innerHTML=CHAPTERS.map((c,i)=>`<option value="${i}">${c}</option>`).join('');
+  document.getElementById('ask-doubt-modal').classList.add('open');
+}
+function submitDoubt(){
+  const s=currentUser;if(!s||s==='admin')return;
+  const ci=parseInt(document.getElementById('ask-chapter').value);
+  const topic=document.getElementById('ask-topic').value.trim();
+  const question=document.getElementById('ask-question').value.trim();
+  if(!question){alert('Please describe your doubt.');return;}
+  const now=new Date();
+  doubts.push({id:Date.now(),studentId:s.id,studentName:s.name,section:s.section,
+    chapterIdx:ci,topic:topic||'General',question,answer:'',
+    timestamp:now.toLocaleDateString()+' '+now.toLocaleTimeString()});
+  s.doubtsAsked=(s.doubtsAsked||0)+1;
+  const si=students.findIndex(x=>x.id===s.id);if(si>=0)students[si].doubtsAsked=s.doubtsAsked;
+  saveAndBroadcast();closeModal('ask-doubt-modal');
+  ['ask-topic','ask-question'].forEach(id=>document.getElementById(id).value='');
+  showToast('❓','Doubt Submitted!','Your teacher will answer soon.');
+  renderHunterDoubts();
+}
+
+// Hunter Chapters Page
+function renderHunterChapters(){
+  const s=currentUser;if(!s||s==='admin')return;
+  const el=document.getElementById('hunter-chapters-content');if(!el)return;
+  el.innerHTML=CHAPTERS.map((ch,ci)=>{
+    const tests=chapterTests[ci]||[];
+    const pct=s.chapters&&s.chapters[ci]!==undefined?s.chapters[ci]:null;
+    return`<div class="ch-acc" id="hchacc-${ci}" style="margin-bottom:10px;">
+      <div class="ch-acc-hd" onclick="toggleHChAcc(${ci})">
+        <div style="width:10px;height:10px;border-radius:3px;background:${pct!==null?masteryColor(pct):'var(--bd)'};flex-shrink:0;"></div>
+        <div class="ch-acc-title">${ch}</div>
+        <div class="ch-acc-meta">${tests.length} test${tests.length!==1?'s':''} ${pct!==null?`· My avg: <span style="color:${masteryColor(pct)};font-weight:700;">${pct}%</span>`:''}</div>
+        <span class="ch-acc-arrow">▼</span>
+      </div>
+      <div class="ch-acc-body">
+        ${tests.length?`
+        <div class="chrt-sm" style="margin-bottom:12px;"><canvas id="hchart-${ci}"></canvas></div>
+        <div class="tw"><table class="st"><thead><tr><th>Test</th><th>My Score</th><th>%</th><th>Status</th></tr></thead>
+          <tbody>${tests.map(t=>{const maxM=s.section==='A'?t.maxA:t.maxB;const score=s.chapterScores[t.id];const tp=score!==undefined?calcPct(score,maxM):null;return`
+            <tr><td style="font-weight:600;font-size:11px;">${t.name}</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${tp!==null?pctColor(tp):'var(--t3)'};">${tp!==null?score+'/'+maxM:'Not taken'}</td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${tp!==null?pctColor(tp):'var(--t3)'};">${tp!==null?tp+'%':'—'}</td>
+            <td>${tp!==null?`<span class="sbadge ${tp>=70?'surge':tp>=40?'stag':'risk'}">${tp>=70?'🟢':tp>=40?'🟡':'🔴'}</span>`:'<span class="sbadge" style="background:var(--sf2);color:var(--t3);">NOT TAKEN</span>'}</td>
+            </tr>`;}).join('')}
+          </tbody></table></div>`:`<div class="empty">No tests yet for this chapter.</div>`}
+      </div>
+    </div>`;}).join('');
+  // Render mini bar charts after DOM settles
+  setTimeout(()=>{
+    CHAPTERS.forEach((ch,ci)=>{
+      const tests=chapterTests[ci]||[];if(!tests.length)return;
+      const canvas=document.getElementById('hchart-'+ci);if(!canvas)return;
+      const s=currentUser;
+      const labels=tests.map(t=>t.name);
+      const data=tests.map(t=>{const maxM=s.section==='A'?t.maxA:t.maxB;const score=s.chapterScores[t.id];return score!==undefined?calcPct(score,maxM):0;});
+      if(charts['hch'+ci])charts['hch'+ci].destroy();
+      charts['hch'+ci]=new Chart(canvas.getContext('2d'),{type:'bar',data:{labels,datasets:[{data,backgroundColor:data.map(v=>masteryColor(v)),borderRadius:4}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{font:{family:'JetBrains Mono',size:10}}},x:{ticks:{font:{family:'JetBrains Mono',size:10}}}}}});
+    });
+  },100);
+}
+function toggleHChAcc(ci){document.getElementById('hchacc-'+ci)?.classList.toggle('open');}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                ACHIEVEMENTS                              ║
+// ╚══════════════════════════════════════════════════════════╝
+function checkAch(s){
+  ACHIEVEMENTS.forEach(a=>{
+    if(a.check(s,homeworks)&&!(s.achUnlocked||[]).includes(a.id)){
+      if(!s.achUnlocked)s.achUnlocked=[];
+      s.achUnlocked.push(a.id);s.xp+=a.xp;
+      setTimeout(()=>showToast(a.icon,'Achievement Unlocked!',a.name+' — +'+a.xp+'XP'),800);
+    }
+  });
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                   MODALS / FX                            ║
+// ╚══════════════════════════════════════════════════════════╝
+function closeMov(e,id){if(e.target.classList.contains('movl'))document.getElementById(id).classList.remove('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function showXPPop(amt){
+  const el=document.createElement('div');el.className='xpp';el.textContent='+'+amt+'XP';
+  el.style.left=(20+Math.random()*60)+'%';el.style.top='35%';
+  document.body.appendChild(el);setTimeout(()=>el.remove(),900);
+}
+let toastTimer=null;
+function showToast(icon,title,sub){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const el=document.createElement('div');el.className='toast';
+  el.innerHTML=`<div class="ti">${icon}</div><div><div class="tt">${title}</div><div class="ts">${sub||''}</div></div>`;
+  document.body.appendChild(el);
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{el.classList.add('hide');setTimeout(()=>el.remove(),300);},3500);
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║                     INIT                                 ║
+// ╚══════════════════════════════════════════════════════════╝
+populateSsel();
+rebuildTicker();
+updateStorageBar();
+document.getElementById('ap').addEventListener('keydown',e=>{if(e.key==='Enter')loginAdmin();});
+document.getElementById('sp').addEventListener('keydown',e=>{if(e.key==='Enter')loginStudent();});
+// Touch-friendly: prevent zoom on double-tap inputs
+document.querySelectorAll('input,select,textarea').forEach(el=>{el.addEventListener('touchstart',e=>{e.stopPropagation();},{passive:true});});
+</script>
+</body>
+</html>
