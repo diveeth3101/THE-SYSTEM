@@ -2,7 +2,7 @@
   "name": "THE SYSTEM: GRADE 9",
   "short_name": "THE SYSTEM",
   "description": "Math Mastery Hunter System",
-  "start_url": "Grade 9-THE SYSTEM.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#007AFF",
@@ -13,4 +13,5 @@
       "type": "image/png"
     }
   ]
+
 }
